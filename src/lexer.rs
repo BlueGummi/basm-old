@@ -1,7 +1,6 @@
+use crate::*;
 use logos::Logos;
 use std::fmt;
-use crate::*;
-
 
 #[derive(Debug)]
 pub struct LexerError {
@@ -197,7 +196,7 @@ pub fn lex(input: &str) -> Result<Vec<TokenKind>, LexerError> {
                 tokens.push(t);
                 //column += lexer.slice().len();
             }
-            _ => {
+            Err(()) => {
                 return Err(LexerError {
                     message: "Unexpected token".to_string(),
                     line,

@@ -1,4 +1,4 @@
-pub mod tokens;
 pub mod lexer;
-pub use tokens::*;
+pub mod tokens;
 pub use lexer::*;
+pub use tokens::*;

@@ -8,7 +8,13 @@ fn main() {
 macro_rules! boink (floop: imm, florp: ireg) {
     mov r0, %floop
     mov r1, %florp
-}"#;
+}
+
+0o333
+
+"fnaf is real \" "
+
+"#;
     println!("{input_string}");
     match lex(input_string) {
         Ok(tokens) => println!("{}", serde_json::to_string_pretty(&tokens).unwrap()),

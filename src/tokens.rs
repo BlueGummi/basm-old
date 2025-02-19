@@ -105,10 +105,10 @@ pub enum TokenKind {
     #[regex("r[0-9]", |lex| lex.slice()[1..].parse::<u8>().unwrap())]
     Register(u8),
 
-    #[regex("'([^\\']|\\.)'", |lex| lex.slice().chars().nth(1).unwrap())]
+    #[regex(r"'([^\\']|\\.)'", |lex| parse_char(lex.slice()))]
     CharLit(char),
 
-    #[regex("\"([^\\\"]|\\.)*\"", |lex| lex.slice()[1..lex.slice().len()-1].to_string())]
+    #[regex(r#""([^\\"]|\\.)*""#, |lex| parse_string(lex.slice()))]
     StringLit(String),
 
     #[regex(r"0[xX][0-9a-fA-F]+", |lex| i64::from_str_radix(&lex.slice()[2..], 16).unwrap())]
@@ -141,7 +141,7 @@ pub enum TokenKind {
 #[derive(Debug, PartialEq, Serialize)]
 pub struct MacroContent {
     pub name: String,
-    pub args: Vec<FullArgument>, // Vector of FullArgument
+    pub args: Vec<FullArgument>,
     pub tokens: Vec<TokenKind>,
 }
 
@@ -177,5 +177,59 @@ impl TokenKind {
         matches!(self, TokenKind::Tab | TokenKind::Whitespace)
     }
 }
+fn parse_char(s: &str) -> char {
+    let inner = &s[1..s.len() - 1];
+    match inner {
+        "\\n" => '\n',
+        "\\r" => '\r',
+        "\\t" => '\t',
+        "\\0" => '\0',
+        "\\'" => '\'',
+        "\\\"" => '\"',
+        "\\\\" => '\\',
+        _ if inner.len() == 1 => inner.chars().next().unwrap(),
+        _ => panic!("Invalid character escape sequence: {}", s),
+    }
+}
+fn parse_string(s: &str) -> String {
+    let inner = &s[1..s.len() - 1];
+    let mut result = String::new();
+    let mut chars = inner.chars().peekable();
 
+    while let Some(c) = chars.next() {
+        if c == '\\' {
+            match chars.next() {
+                Some('n') => result.push('\n'),
+                Some('r') => result.push('\r'),
+                Some('t') => result.push('\t'),
+                Some('0') => result.push('\0'),
+                Some('\'') => result.push('\''),
+                Some('"') => result.push('\"'),
+                Some('\\') => result.push('\\'),
+                Some('u') => {
+                    if let Some('{') = chars.next() {
+                        let mut hex_code = String::new();
+                        while let Some(&next) = chars.peek() {
+                            if next == '}' {
+                                chars.next();
+                                break;
+                            }
+                            hex_code.push(next);
+                            chars.next();
+                        }
+                        if let Ok(code) = u32::from_str_radix(&hex_code, 16) {
+                            if let Some(ch) = char::from_u32(code) {
+                                result.push(ch);
+                            }
+                        }
+                    }
+                }
+                _ => panic!("Invalid string escape sequence"),
+            }
+        } else {
+            result.push(c);
+        }
+    }
 
+    result
+}
