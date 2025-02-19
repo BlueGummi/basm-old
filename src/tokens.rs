@@ -139,6 +139,8 @@ pub enum TokenKind {
     Macro(MacroContent),
 
     Instruction(InstructionData),
+
+    Label(String),
 }
 
 impl TokenKind {

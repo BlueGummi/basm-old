@@ -3,7 +3,7 @@ use crate::*;
 impl Parser<'_> {
     fn parse_single_macro_argument(&mut self, arg_name: String) -> Vec<FullArgument> {
         let input_str = self.input.to_string();
-        let (val, _) = match self.lexer.next() {
+        let (val, loc) = match self.lexer.next() {
             Some((v, l)) => (v, l),
             None => panic!(),
         };
@@ -43,6 +43,7 @@ impl Parser<'_> {
                             line: loc.start,
                             column: loc.end,
                         });
+                        return args;
                     }
                 }
             }
@@ -50,9 +51,10 @@ impl Parser<'_> {
                 self.errors.push(ParserError {
                     input: input_str,
                     message: "Expected colon after argument name".to_string(),
-                    line: 0,
-                    column: 0,
+                    line: loc.start,
+                    column: loc.end,
                 });
+                return args;
             }
         }
         args
@@ -63,9 +65,9 @@ impl Parser<'_> {
         let mut tokens = Vec::new();
         let mut args = Vec::new();
         loop {
-            let (val, _) = match self.lexer.next() {
+            let (val, l) = match self.lexer.next() {
                 Some((v, l)) => (v, l),
-                None => panic!(),
+                None => return tokens,
             };
             match val {
                 Ok(TokenKind::Tab) | Ok(TokenKind::Whitespace) | Ok(TokenKind::Comma) => {
@@ -79,18 +81,17 @@ impl Parser<'_> {
                     self.errors.push(ParserError {
                         input: self.input.to_string(),
                         message: "Invalid macro argument syntax".to_string(),
-                        line: 0,
-                        column: 0,
+                        line: l.start,
+                        column: l.end,
                     });
                 }
             }
         }
-        let value = if let Some(v) = self.lexer.next() {
-            v.0
-        } else {
-            panic!();
+        let (val, loc) = match self.lexer.next() {
+            Some((v, l)) => (v, l),
+            None => panic!(),
         };
-        match value {
+        match val {
             Ok(TokenKind::LeftBrace) => {
                 let mut brace_count = 1;
                 let mut macro_tokens = Vec::new();
@@ -125,8 +126,8 @@ impl Parser<'_> {
                 self.errors.push(ParserError {
                     input: input_str,
                     message: "Expected open brace to start macro body".to_string(),
-                    line: 0,
-                    column: 0,
+                    line: loc.start,
+                    column: loc.end,
                 });
             }
         }
@@ -136,15 +137,18 @@ impl Parser<'_> {
     pub fn parse_single_macro(&mut self) -> Vec<TokenKind> {
         let input_str = self.input.to_string();
         let mut tokens = Vec::new();
-
-        let name = if let Ok(TokenKind::Ident(v)) = self.lexer.next().unwrap().0 {
+        let (val, loc) = match self.lexer.next() {
+            Some((v, l)) => (v, l),
+            None => panic!(),
+        };
+        let name = if let Ok(TokenKind::Ident(v)) = val {
             v
         } else {
             self.errors.push(ParserError {
                 input: input_str,
                 message: "expected ident after macro decl".to_string(),
-                line: 0,
-                column: 0,
+                line: loc.start,
+                column: loc.end,
             });
             return tokens;
         };
