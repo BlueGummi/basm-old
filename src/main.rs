@@ -1,7 +1,7 @@
 use logos::Logos;
-use std::fmt;
 use serde::Serialize;
 use serde_json;
+use std::fmt;
 
 #[derive(Debug, PartialEq, Serialize)]
 pub struct MacroContent<'a> {
@@ -42,88 +42,133 @@ impl ArgumentType {
 pub enum TokenKind<'a> {
     #[token("\n")]
     Newline,
+
     #[token(" ")]
     Whitespace,
+
     #[token("\t")]
     Tab,
+
     #[token("(")]
     LeftParen,
+
     #[token(")")]
     RightParen,
+
     #[token("[")]
     LeftBracket,
+
     #[token("]")]
     RightBracket,
+
     #[token("{")]
     LeftBrace,
+
     #[token("}")]
     RightBrace,
+
     #[token(",")]
     Comma,
+
     #[token(".")]
     Dot,
+
     #[token("~")]
     Tilde,
+
     #[token("`")]
     Grave,
+
     #[token("#")]
     Pound,
+
     #[token("+")]
     Plus,
+
     #[token("++")]
     PlusPlus,
+
     #[token("-")]
     Minus,
+
     #[token("--")]
     MinusMinus,
+
     #[token("*")]
     Star,
+
     #[token("/")]
     Slash,
+
     #[token("%")]
     Mod,
+
     #[token("!")]
     Bang,
+
     #[token("=")]
     Equal,
+
     #[token(">")]
     Greater,
+
     #[token(">>")]
     GreaterGreater,
+
     #[token("<")]
     Less,
+
     #[token("<<")]
     LessLess,
+
     #[token("&")]
     Amp,
+
     #[token("&&")]
     AmpAmp,
+
     #[token("|")]
     Pipe,
+
     #[token("||")]
     PipePipe,
+
     #[token("^")]
     Xor,
+
     #[token(":")]
     Colon,
-    #[regex("r[0-9]", |lex| lex.slice())]
-    Register(&'a str),
+
+    #[regex("r[0-9]", |lex| lex.slice()[1..].parse::<u8>().unwrap())]
+    Register(u8),
+
     #[regex("'([^\\']|\\.)'", |lex| lex.slice().chars().nth(1))]
     CharLit(char),
+
     #[regex("\"([^\\\"]|\\.)*\"", |lex| &lex.slice()[1..lex.slice().len()-1])]
     StringLit(&'a str),
+
     #[regex(r"0[xX][0-9a-fA-F]+", |lex| i64::from_str_radix(&lex.slice()[2..], 16).unwrap())]
     HexLit(i64),
+
     #[regex(r"0[bB][01]+", |lex| i64::from_str_radix(&lex.slice()[2..], 2).unwrap())]
     BinLit(i64),
+
     #[regex(r"0[oO][0-7]+", |lex| i64::from_str_radix(&lex.slice()[2..], 8).unwrap())]
     OctLit(i64),
+
     #[regex(r"[0-9]+", |lex| lex.slice().parse::<i64>().unwrap())]
     IntLit(i64),
+
     #[regex(r"macro_rules!\s+[a-zA-Z_][a-zA-Z0-9_]*", |lex| lex.slice())]
     MacroDef(&'a str),
+
     #[regex("[a-zA-Z_][a-zA-Z0-9_]*", |lex| lex.slice())]
     Ident(&'a str),
+
+    #[regex("%[a-zA-Z_][a-zA-Z0-9_]*", |lex| lex.slice()[1..].to_string())]
+    MacroIdent(String),
+
     #[regex(";.*", logos::skip)]
     Comment,
 
@@ -330,9 +375,7 @@ pub fn lex(input: &str) -> Result<Vec<TokenKind<'_>>, LexerError> {
 fn main() {
     let input_string = r#"macro_rules! my_macro (arg1 : reg, arg2 : imm) {
     mov %arg1, %arg2
-}
-mov r0, 3
-lea r2, [0xff]"#;
+}"#;
     println!("{input_string}");
     match lex(input_string) {
         Ok(tokens) => println!("{}", serde_json::to_string_pretty(&tokens).unwrap()),
