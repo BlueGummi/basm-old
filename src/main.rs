@@ -350,7 +350,6 @@ pub fn lex(input: &str) -> Result<Vec<TokenKind>, LexerError> {
                                     args,
                                     tokens: macro_tokens,
                                 }));
-                                break;
                             }
                             _ => {
                                 return Err(LexerError {
@@ -388,8 +387,13 @@ pub fn lex(input: &str) -> Result<Vec<TokenKind>, LexerError> {
 }
 
 fn main() {
-    let input_string = r#"macro_rules! my_macro (arg1 : reg, arg2 : imm, arg3 : mem, arg4 : ireg) {
+    let input_string = r#"macro_rules! my_macro ( arg1 : reg, arg2 : imm, arg3 : mem, arg4 : ireg ) {
     mov %arg1, %arg2 ; comment
+}
+
+macro_rules! boink (floop: imm, florp: ireg) {
+    mov r0, %floop
+    mov r1, %florp
 }"#;
     println!("{input_string}");
     match lex(input_string) {
