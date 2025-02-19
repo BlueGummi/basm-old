@@ -152,6 +152,7 @@ pub fn lex(input: &str) -> Result<Vec<TokenKind<'_>>, LexerError> {
     let mut column = 1;
 
     while let Some(token) = lexer.next() {
+        // begin token iteration here
         match token {
             Ok(TokenKind::Newline) => {
                 line += 1;
@@ -162,6 +163,7 @@ pub fn lex(input: &str) -> Result<Vec<TokenKind<'_>>, LexerError> {
                 column += lexer.slice().len();
             }
             Ok(TokenKind::MacroDef(macro_def)) => {
+                // O.o macro spotted
                 let name = macro_def
                     .split_whitespace()
                     .nth(1)
@@ -170,19 +172,26 @@ pub fn lex(input: &str) -> Result<Vec<TokenKind<'_>>, LexerError> {
                         line,
                         column,
                     })?;
-                loop {
+                'macro_loop: loop {
+                    // start collecting goodies in the macro :3
                     match lexer.next() {
                         Some(Ok(TokenKind::Tab)) | Some(Ok(TokenKind::Whitespace)) => {
                             continue;
                         }
                         Some(Ok(TokenKind::LeftParen)) => {
+                            // O.o look, macro arguments!
                             let mut args = Vec::new();
                             loop {
+                                // look through macro arguments
                                 match lexer.next() {
-                                    Some(Ok(TokenKind::Tab)) | Some(Ok(TokenKind::Whitespace)) => {
+                                    Some(Ok(TokenKind::Tab))
+                                    | Some(Ok(TokenKind::Whitespace))
+                                    | Some(Ok(TokenKind::Comma)) => {
                                         continue;
                                     }
                                     Some(Ok(TokenKind::Ident(arg_name))) => 'outer: loop {
+                                        // teehee,
+                                        // found an argument
                                         match lexer.next() {
                                             Some(Ok(TokenKind::Tab))
                                             | Some(Ok(TokenKind::Whitespace)) => {
@@ -234,7 +243,6 @@ pub fn lex(input: &str) -> Result<Vec<TokenKind<'_>>, LexerError> {
                                     },
                                     Some(Ok(TokenKind::RightParen)) => break,
                                     _ => {
-                                        println!("{name:?}, {args:?}, {tokens:?}");
                                         return Err(LexerError {
                                             message: "Invalid macro argument syntax".to_string(),
                                             line,
@@ -243,49 +251,50 @@ pub fn lex(input: &str) -> Result<Vec<TokenKind<'_>>, LexerError> {
                                     }
                                 }
                             }
+                            loop {
+                                match lexer.next() {
+                                    Some(Ok(TokenKind::Tab)) | Some(Ok(TokenKind::Whitespace)) => {
+                                        continue;
+                                    }
+                                    Some(Ok(TokenKind::LeftBrace)) => {
+                                        let mut brace_count = 1;
+                                        let mut macro_tokens = Vec::new();
 
-                            match lexer.next() {
-                                Some(Ok(TokenKind::Tab)) | Some(Ok(TokenKind::Whitespace)) => {
-                                    continue;
-                                }
-                                Some(Ok(TokenKind::LeftBrace)) => {
-                                    let mut brace_count = 1;
-                                    let mut macro_tokens = Vec::new();
-
-                                    for tok in lexer.by_ref() {
-                                        match tok {
-                                            Ok(TokenKind::LeftBrace) => brace_count += 1,
-                                            Ok(TokenKind::RightBrace) => {
-                                                brace_count -= 1;
-                                                if brace_count == 0 {
-                                                    break;
+                                        for tok in lexer.by_ref() {
+                                            match tok {
+                                                Ok(TokenKind::LeftBrace) => brace_count += 1,
+                                                Ok(TokenKind::RightBrace) => {
+                                                    brace_count -= 1;
+                                                    if brace_count == 0 {
+                                                        break;
+                                                    }
+                                                }
+                                                Ok(t) => macro_tokens.push(t),
+                                                _ => {
+                                                    return Err(LexerError {
+                                                        message: "Invalid token in macro body"
+                                                            .to_string(),
+                                                        line,
+                                                        column,
+                                                    });
                                                 }
                                             }
-                                            Ok(t) => macro_tokens.push(t),
-                                            _ => {
-                                                return Err(LexerError {
-                                                    message: "Invalid token in macro body"
-                                                        .to_string(),
-                                                    line,
-                                                    column,
-                                                });
-                                            }
                                         }
+                                        tokens.push(TokenKind::Macro(MacroContent {
+                                            name,
+                                            args,
+                                            tokens: macro_tokens,
+                                        }));
+                                        break 'macro_loop;
                                     }
-                                    tokens.push(TokenKind::Macro(MacroContent {
-                                        name,
-                                        args,
-                                        tokens: macro_tokens,
-                                    }));
-                                    break;
-                                }
-                                _ => {
-                                    return Err(LexerError {
-                                        message: "Expected open brace to start macro body"
-                                            .to_string(),
-                                        line,
-                                        column,
-                                    });
+                                    _ => {
+                                        return Err(LexerError {
+                                            message: "Expected open brace to start macro body"
+                                                .to_string(),
+                                            line,
+                                            column,
+                                        });
+                                    }
                                 }
                             }
                         }
@@ -317,7 +326,7 @@ pub fn lex(input: &str) -> Result<Vec<TokenKind<'_>>, LexerError> {
 }
 
 fn main() {
-    let input_string = r#"macro_rules! my_macro (arg1 : reg) {
+    let input_string = r#"macro_rules! my_macro (arg1 : reg, arg2 : imm) {
     mov %arg1, %arg2
 }"#;
     println!("{input_string}");
