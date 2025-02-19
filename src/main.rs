@@ -1,20 +1,22 @@
 use logos::Logos;
 use std::fmt;
+use serde::Serialize;
+use serde_json;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Serialize)]
 pub struct MacroContent<'a> {
     pub name: &'a str,
     pub args: Vec<FullArgument>, // Vector of FullArgument
     pub tokens: Vec<TokenKind<'a>>,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Serialize)]
 pub struct FullArgument {
     pub name: String,
     pub arg_type: ArgumentType,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Serialize)]
 pub enum ArgumentType {
     Mem,
     Imem,
@@ -36,7 +38,7 @@ impl ArgumentType {
     }
 }
 
-#[derive(Logos, Debug, PartialEq)]
+#[derive(Logos, Debug, PartialEq, Serialize)]
 pub enum TokenKind<'a> {
     #[token("\n")]
     Newline,
@@ -328,10 +330,12 @@ pub fn lex(input: &str) -> Result<Vec<TokenKind<'_>>, LexerError> {
 fn main() {
     let input_string = r#"macro_rules! my_macro (arg1 : reg, arg2 : imm) {
     mov %arg1, %arg2
-}"#;
+}
+mov r0, 3
+lea r2, [0xff]"#;
     println!("{input_string}");
     match lex(input_string) {
-        Ok(tokens) => println!("Tokens: {:?}", tokens),
+        Ok(tokens) => println!("{}", serde_json::to_string_pretty(&tokens).unwrap()),
         Err(e) => println!("Error: {}", e),
     }
 }
