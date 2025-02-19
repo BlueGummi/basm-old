@@ -3,10 +3,10 @@ use serde::Serialize;
 
 #[derive(Logos, Debug, PartialEq, Serialize)]
 pub enum TokenKind {
-    #[token("\n")]
+    #[token("\n", logos::skip)]
     Newline,
 
-    #[token(" ")]
+    #[token(" ", logos::skip)]
     Whitespace,
 
     #[token("\t")]
