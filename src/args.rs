@@ -21,6 +21,7 @@ pub enum ArgumentType {
     Ireg,
     Imm,
     Reg,
+    Label,
 }
 
 impl ArgumentType {
@@ -31,6 +32,7 @@ impl ArgumentType {
             "ireg" => Some(ArgumentType::Ireg),
             "imm" => Some(ArgumentType::Imm),
             "reg" => Some(ArgumentType::Reg),
+            "label" => Some(ArgumentType::Label),
             _ => None,
         }
     }
