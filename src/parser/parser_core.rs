@@ -17,4 +17,30 @@ impl<'a> Parser<'a> {
             errors,
         }
     }
+    pub fn parse(&mut self) -> Result<Vec<TokenKind>, &Vec<ParserError>> {
+        let mut tokens = Vec::new();
+
+        while let Some((token, span)) = self.lexer.next() {
+            match token {
+                Ok(TokenKind::Whitespace) | Ok(TokenKind::Tab) => {}
+                Ok(TokenKind::MacroDef(_)) => tokens.extend(self.parse_single_macro()),
+                Ok(t) => {
+                    tokens.push(t);
+                }
+                Err(()) => {
+                    self.errors.push(ParserError {
+                        input: self.input.to_string(),
+                        message: "Unexpected token".to_string(),
+                        line: span.start,
+                        column: span.end,
+                    });
+                }
+            }
+        }
+        if !self.errors.is_empty() {
+            return Err(&self.errors);
+        }
+
+        Ok(tokens)
+    }
 }

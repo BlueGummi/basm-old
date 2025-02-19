@@ -1,32 +1,6 @@
 use crate::*;
 
 impl Parser<'_> {
-    pub fn parse_macros(&mut self) -> Result<Vec<TokenKind>, &Vec<ParserError>> {
-        let mut tokens = Vec::new();
-
-        while let Some((token, span)) = self.lexer.next() {
-            match token {
-                Ok(TokenKind::Whitespace) | Ok(TokenKind::Tab) => {}
-                Ok(TokenKind::MacroDef(_)) => tokens.extend(self.parse_single_macro()),
-                Ok(t) => {
-                    tokens.push(t);
-                }
-                Err(()) => {
-                    self.errors.push(ParserError {
-                        input: self.input.to_string(),
-                        message: "Unexpected token".to_string(),
-                        line: span.start,
-                        column: span.end,
-                    });
-                }
-            }
-        }
-        if !self.errors.is_empty() {
-            return Err(&self.errors);
-        }
-
-        Ok(tokens)
-    }
     fn parse_single_macro_argument(&mut self, arg_name: String) -> Vec<FullArgument> {
         let input_str = self.input.to_string();
         let (val, _) = match self.lexer.next() {
@@ -159,7 +133,7 @@ impl Parser<'_> {
         tokens
     }
 
-    fn parse_single_macro(&mut self) -> Vec<TokenKind> {
+    pub fn parse_single_macro(&mut self) -> Vec<TokenKind> {
         let input_str = self.input.to_string();
         let mut tokens = Vec::new();
 
