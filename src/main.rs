@@ -388,8 +388,8 @@ pub fn lex(input: &str) -> Result<Vec<TokenKind>, LexerError> {
 }
 
 fn main() {
-    let input_string = r#"macro_rules! my_macro (arg1 : reg, arg2 : imm) {
-    mov %arg1, %arg2
+    let input_string = r#"macro_rules! my_macro (arg1 : reg, arg2 : imm, arg3 : mem, arg4 : ireg) {
+    mov %arg1, %arg2 ; comment
 }"#;
     println!("{input_string}");
     match lex(input_string) {
