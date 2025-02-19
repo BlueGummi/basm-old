@@ -16,10 +16,11 @@ macro_rules! boink (floop: imm, florp: ireg) {
 
 "#;
     println!("{input_string}");
-    match lex(input_string) {
+    let mut macro_parser = MacroParser::new(input_string);
+    match macro_parser.parse_macros() {
         Ok(tokens) => {
             println!("{}", serde_json::to_string_pretty(&tokens).unwrap());
         }
-        Err(e) => println!("Error: {}", e),
+        Err(e) => println!("Errors: {:?}", e),
     }
 }
