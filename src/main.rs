@@ -16,8 +16,8 @@ macro_rules! boink (floop: imm, florp: ireg) {
 
 "#;
     println!("{input_string}");
-    let mut macro_parser = MacroParser::new(input_string);
-    match macro_parser.parse_macros() {
+    let mut parser = Parser::new(input_string);
+    match parser.parse_macros() {
         Ok(tokens) => {
             println!("{}", serde_json::to_string_pretty(&tokens).unwrap());
         }

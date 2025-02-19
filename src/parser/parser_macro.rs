@@ -1,23 +1,32 @@
 use crate::*;
-use logos::Logos;
 
-pub struct MacroParser<'a> {
-    lexer: logos::SpannedIter<'a, TokenKind>,
-    input: &'a str,
-    errors: Vec<ParserError>,
-}
+impl Parser<'_> {
+    pub fn parse_macros(&mut self) -> Result<Vec<TokenKind>, &Vec<ParserError>> {
+        let mut tokens = Vec::new();
 
-impl<'a> MacroParser<'a> {
-    pub fn new(input: &'a str) -> Self {
-        let lexer = TokenKind::lexer(input).spanned();
-        let errors = Vec::new();
-        MacroParser {
-            lexer,
-            input,
-            errors,
+        while let Some((token, span)) = self.lexer.next() {
+            match token {
+                Ok(TokenKind::Whitespace) | Ok(TokenKind::Tab) => {}
+                Ok(TokenKind::MacroDef(_)) => tokens.extend(self.parse_single_macro()),
+                Ok(t) => {
+                    tokens.push(t);
+                }
+                Err(()) => {
+                    self.errors.push(ParserError {
+                        input: self.input.to_string(),
+                        message: "Unexpected token".to_string(),
+                        line: span.start,
+                        column: span.end,
+                    });
+                }
+            }
         }
-    }
+        if !self.errors.is_empty() {
+            return Err(&self.errors);
+        }
 
+        Ok(tokens)
+    }
     fn parse_single_macro_argument(&mut self, arg_name: String) -> Vec<FullArgument> {
         let input_str = self.input.to_string();
         let (val, _) = match self.lexer.next() {
@@ -34,16 +43,17 @@ impl<'a> MacroParser<'a> {
                 match val {
                     Ok(TokenKind::Ident(arg_type_str)) => {
                         let mut leave = false;
-                        let arg_type = ArgumentType::from_str(&arg_type_str).unwrap_or_else(|| {
-                            self.errors.push(ParserError {
-                                input: input_str,
-                                message: format!("Invalid argument type: {}", arg_type_str),
-                                line: loc.start,
-                                column: loc.end,
+                        let arg_type =
+                            ArgumentType::from_string(&arg_type_str).unwrap_or_else(|| {
+                                self.errors.push(ParserError {
+                                    input: input_str,
+                                    message: format!("Invalid argument type: {}", arg_type_str),
+                                    line: loc.start,
+                                    column: loc.end,
+                                });
+                                leave = true;
+                                ArgumentType::Reg
                             });
-                            leave = true;
-                            ArgumentType::Reg
-                        });
                         if leave {
                             return args;
                         }
@@ -183,32 +193,5 @@ impl<'a> MacroParser<'a> {
             }
         }
         tokens
-    }
-
-    pub fn parse_macros(&mut self) -> Result<Vec<TokenKind>, &Vec<ParserError>> {
-        let mut tokens = Vec::new();
-
-        while let Some((token, span)) = self.lexer.next() {
-            match token {
-                Ok(TokenKind::Whitespace) | Ok(TokenKind::Tab) => {}
-                Ok(TokenKind::MacroDef(_)) => tokens.extend(self.parse_single_macro()),
-                Ok(t) => {
-                    tokens.push(t);
-                }
-                Err(()) => {
-                    self.errors.push(ParserError {
-                        input: self.input.to_string(),
-                        message: "Unexpected token".to_string(),
-                        line: span.start,
-                        column: span.end,
-                    });
-                }
-            }
-        }
-        if !self.errors.is_empty() {
-            return Err(&self.errors);
-        }
-
-        Ok(tokens)
     }
 }

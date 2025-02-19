@@ -24,7 +24,7 @@ pub enum ArgumentType {
 }
 
 impl ArgumentType {
-    pub fn from_str(s: &str) -> Option<Self> {
+    pub fn from_string(s: &str) -> Option<Self> {
         match s {
             "mem" => Some(ArgumentType::Mem),
             "imem" => Some(ArgumentType::Imem),
@@ -44,6 +44,7 @@ pub enum InstructionArgument {
     IReg(i64),
     Imm(i64),
     Ident(String),
+    MacroIdent(String),
 }
 
 #[derive(Debug, PartialEq, Serialize, Clone)]
