@@ -145,7 +145,6 @@ impl fmt::Display for LexerError {
         )
     }
 }
-
 pub fn lex(input: &str) -> Result<Vec<TokenKind<'_>>, LexerError> {
     let mut lexer = TokenKind::lexer(input);
     let mut tokens = Vec::new();
@@ -171,108 +170,132 @@ pub fn lex(input: &str) -> Result<Vec<TokenKind<'_>>, LexerError> {
                         line,
                         column,
                     })?;
-
-                match lexer.next() {
-                    Some(Ok(TokenKind::LeftParen)) => {
-                        let mut args = Vec::new();
-                        loop {
-                            match lexer.next() {
-                                Some(Ok(TokenKind::Ident(arg_name))) => match lexer.next() {
-                                    Some(Ok(TokenKind::Colon)) => match lexer.next() {
-                                        Some(Ok(TokenKind::Ident(arg_type_str))) => {
-                                            let arg_type = ArgumentType::from_str(arg_type_str)
-                                                .ok_or_else(|| LexerError {
-                                                    message: format!(
-                                                        "Invalid argument type: {}",
-                                                        arg_type_str
-                                                    ),
+                loop {
+                    match lexer.next() {
+                        Some(Ok(TokenKind::Tab)) | Some(Ok(TokenKind::Whitespace)) => {
+                            continue;
+                        }
+                        Some(Ok(TokenKind::LeftParen)) => {
+                            let mut args = Vec::new();
+                            loop {
+                                match lexer.next() {
+                                    Some(Ok(TokenKind::Tab)) | Some(Ok(TokenKind::Whitespace)) => {
+                                        continue;
+                                    }
+                                    Some(Ok(TokenKind::Ident(arg_name))) => 'outer: loop {
+                                        match lexer.next() {
+                                            Some(Ok(TokenKind::Tab))
+                                            | Some(Ok(TokenKind::Whitespace)) => {
+                                                continue;
+                                            }
+                                            Some(Ok(TokenKind::Colon)) => loop {
+                                                match lexer.next() {
+                                                    Some(Ok(TokenKind::Tab))
+                                                    | Some(Ok(TokenKind::Whitespace)) => {
+                                                        continue;
+                                                    }
+                                                    Some(Ok(TokenKind::Ident(arg_type_str))) => {
+                                                        let arg_type =
+                                                            ArgumentType::from_str(arg_type_str)
+                                                                .ok_or_else(|| LexerError {
+                                                                    message: format!(
+                                                                        "Invalid argument type: {}",
+                                                                        arg_type_str
+                                                                    ),
+                                                                    line,
+                                                                    column,
+                                                                })?;
+                                                        args.push(FullArgument {
+                                                            name: arg_name.to_string(),
+                                                            arg_type,
+                                                        });
+                                                        break 'outer;
+                                                    }
+                                                    _ => {
+                                                        return Err(LexerError {
+                                                            message:
+                                                                "Expected argument type after colon"
+                                                                    .to_string(),
+                                                            line,
+                                                            column,
+                                                        });
+                                                    }
+                                                }
+                                            },
+                                            _ => {
+                                                return Err(LexerError {
+                                                    message: "Expected colon after argument name"
+                                                        .to_string(),
                                                     line,
                                                     column,
-                                                })?;
-                                            args.push(FullArgument {
-                                                name: arg_name.to_string(),
-                                                arg_type,
-                                            });
-                                        }
-                                        _ => {
-                                            return Err(LexerError {
-                                                message: "Expected argument type after colon"
-                                                    .to_string(),
-                                                line,
-                                                column,
-                                            });
+                                                });
+                                            }
                                         }
                                     },
+                                    Some(Ok(TokenKind::RightParen)) => break,
                                     _ => {
+                                        println!("{name:?}, {args:?}, {tokens:?}");
                                         return Err(LexerError {
-                                            message: "Expected colon after argument name"
-                                                .to_string(),
+                                            message: "Invalid macro argument syntax".to_string(),
                                             line,
                                             column,
                                         });
                                     }
-                                },
-                                Some(Ok(TokenKind::RightParen)) => break,
+                                }
+                            }
+
+                            match lexer.next() {
                                 Some(Ok(TokenKind::Tab)) | Some(Ok(TokenKind::Whitespace)) => {
                                     continue;
                                 }
+                                Some(Ok(TokenKind::LeftBrace)) => {
+                                    let mut brace_count = 1;
+                                    let mut macro_tokens = Vec::new();
+
+                                    for tok in lexer.by_ref() {
+                                        match tok {
+                                            Ok(TokenKind::LeftBrace) => brace_count += 1,
+                                            Ok(TokenKind::RightBrace) => {
+                                                brace_count -= 1;
+                                                if brace_count == 0 {
+                                                    break;
+                                                }
+                                            }
+                                            Ok(t) => macro_tokens.push(t),
+                                            _ => {
+                                                return Err(LexerError {
+                                                    message: "Invalid token in macro body"
+                                                        .to_string(),
+                                                    line,
+                                                    column,
+                                                });
+                                            }
+                                        }
+                                    }
+                                    tokens.push(TokenKind::Macro(MacroContent {
+                                        name,
+                                        args,
+                                        tokens: macro_tokens,
+                                    }));
+                                    break;
+                                }
                                 _ => {
                                     return Err(LexerError {
-                                        message: "Invalid macro argument syntax".to_string(),
+                                        message: "Expected open brace to start macro body"
+                                            .to_string(),
                                         line,
                                         column,
                                     });
                                 }
                             }
                         }
-
-                        match lexer.next() {
-                            Some(Ok(TokenKind::LeftBrace)) => {
-                                let mut brace_count = 1;
-                                let mut macro_tokens = Vec::new();
-
-                                for tok in lexer.by_ref() {
-                                    match tok {
-                                        Ok(TokenKind::LeftBrace) => brace_count += 1,
-                                        Ok(TokenKind::RightBrace) => {
-                                            brace_count -= 1;
-                                            if brace_count == 0 {
-                                                break;
-                                            }
-                                        }
-                                        Ok(t) => macro_tokens.push(t),
-                                        _ => {
-                                            return Err(LexerError {
-                                                message: "Invalid token in macro body".to_string(),
-                                                line,
-                                                column,
-                                            });
-                                        }
-                                    }
-                                }
-
-                                tokens.push(TokenKind::Macro(MacroContent {
-                                    name,
-                                    args,
-                                    tokens: macro_tokens,
-                                }));
-                            }
-                            _ => {
-                                return Err(LexerError {
-                                    message: "Expected open brace to start macro body".to_string(),
-                                    line,
-                                    column,
-                                });
-                            }
+                        _ => {
+                            return Err(LexerError {
+                                message: "Expected open paren after macro name".to_string(),
+                                line,
+                                column,
+                            });
                         }
-                    }
-                    Some(Ok(TokenKind::Tab)) | Some(Ok(TokenKind::Whitespace)) => continue,
-                    _ => {
-                        return Err(LexerError {
-                            message: "Expected open paren after macro name".to_string(),
-                            line,
-                            column,
-                        });
                     }
                 }
             }
@@ -292,8 +315,9 @@ pub fn lex(input: &str) -> Result<Vec<TokenKind<'_>>, LexerError> {
 
     Ok(tokens)
 }
+
 fn main() {
-    let input_string = r#"macro_rules! my_macro (arg1: reg, arg2: imm) {
+    let input_string = r#"macro_rules! my_macro (arg1 : reg) {
     mov %arg1, %arg2
 }"#;
     println!("{input_string}");
