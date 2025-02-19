@@ -1,13 +1,12 @@
 use logos::Logos;
 use serde::Serialize;
-use serde_json;
 use std::fmt;
 
 #[derive(Debug, PartialEq, Serialize)]
-pub struct MacroContent<'a> {
-    pub name: &'a str,
+pub struct MacroContent {
+    pub name: String,
     pub args: Vec<FullArgument>, // Vector of FullArgument
-    pub tokens: Vec<TokenKind<'a>>,
+    pub tokens: Vec<TokenKind>,
 }
 
 #[derive(Debug, PartialEq, Serialize)]
@@ -39,7 +38,7 @@ impl ArgumentType {
 }
 
 #[derive(Logos, Debug, PartialEq, Serialize)]
-pub enum TokenKind<'a> {
+pub enum TokenKind {
     #[token("\n")]
     Newline,
 
@@ -142,11 +141,11 @@ pub enum TokenKind<'a> {
     #[regex("r[0-9]", |lex| lex.slice()[1..].parse::<u8>().unwrap())]
     Register(u8),
 
-    #[regex("'([^\\']|\\.)'", |lex| lex.slice().chars().nth(1))]
+    #[regex("'([^\\']|\\.)'", |lex| lex.slice().chars().nth(1).unwrap())]
     CharLit(char),
 
-    #[regex("\"([^\\\"]|\\.)*\"", |lex| &lex.slice()[1..lex.slice().len()-1])]
-    StringLit(&'a str),
+    #[regex("\"([^\\\"]|\\.)*\"", |lex| lex.slice()[1..lex.slice().len()-1].to_string())]
+    StringLit(String),
 
     #[regex(r"0[xX][0-9a-fA-F]+", |lex| i64::from_str_radix(&lex.slice()[2..], 16).unwrap())]
     HexLit(i64),
@@ -160,11 +159,11 @@ pub enum TokenKind<'a> {
     #[regex(r"[0-9]+", |lex| lex.slice().parse::<i64>().unwrap())]
     IntLit(i64),
 
-    #[regex(r"macro_rules!\s+[a-zA-Z_][a-zA-Z0-9_]*", |lex| lex.slice())]
-    MacroDef(&'a str),
+    #[regex(r"macro_rules!\s+[a-zA-Z_][a-zA-Z0-9_]*", |lex| lex.slice().to_string())]
+    MacroDef(String),
 
-    #[regex("[a-zA-Z_][a-zA-Z0-9_]*", |lex| lex.slice())]
-    Ident(&'a str),
+    #[regex("[a-zA-Z_][a-zA-Z0-9_]*", |lex| lex.slice().to_string())]
+    Ident(String),
 
     #[regex("%[a-zA-Z_][a-zA-Z0-9_]*", |lex| lex.slice()[1..].to_string())]
     MacroIdent(String),
@@ -172,8 +171,7 @@ pub enum TokenKind<'a> {
     #[regex(";.*", logos::skip)]
     Comment,
 
-    // Use a single field for the Macro variant
-    Macro(MacroContent<'a>),
+    Macro(MacroContent),
 }
 
 #[derive(Debug)]
@@ -192,7 +190,8 @@ impl fmt::Display for LexerError {
         )
     }
 }
-pub fn lex(input: &str) -> Result<Vec<TokenKind<'_>>, LexerError> {
+
+pub fn lex(input: &str) -> Result<Vec<TokenKind>, LexerError> {
     let mut lexer = TokenKind::lexer(input);
     let mut tokens = Vec::new();
     let mut line = 1;
@@ -218,7 +217,8 @@ pub fn lex(input: &str) -> Result<Vec<TokenKind<'_>>, LexerError> {
                         message: "Macro definition should have a name".to_string(),
                         line,
                         column,
-                    })?;
+                    })?
+                    .to_string();
                 'macro_loop: loop {
                     // start collecting goodies in the macro :3
                     match lexer.next() {
@@ -252,15 +252,15 @@ pub fn lex(input: &str) -> Result<Vec<TokenKind<'_>>, LexerError> {
                                                     }
                                                     Some(Ok(TokenKind::Ident(arg_type_str))) => {
                                                         let arg_type =
-                                                            ArgumentType::from_str(arg_type_str)
+                                                            ArgumentType::from_str(&arg_type_str)
                                                                 .ok_or_else(|| LexerError {
-                                                                    message: format!(
-                                                                        "Invalid argument type: {}",
-                                                                        arg_type_str
-                                                                    ),
-                                                                    line,
-                                                                    column,
-                                                                })?;
+                                                                message: format!(
+                                                                    "Invalid argument type: {}",
+                                                                    arg_type_str
+                                                                ),
+                                                                line,
+                                                                column,
+                                                            })?;
                                                         args.push(FullArgument {
                                                             name: arg_name.to_string(),
                                                             arg_type,
