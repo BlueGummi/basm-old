@@ -5,14 +5,14 @@ impl Parser<'_> {
         let input_str = self.input.to_string();
         let (val, loc) = match self.lexer.next() {
             Some((v, l)) => (v, l),
-            None => panic!(),
+            None => return Vec::new(),
         };
         let mut args = Vec::new();
         match val {
             Ok(TokenKind::Colon) => {
                 let (val, loc) = match self.lexer.next() {
                     Some((v, l)) => (v, l),
-                    None => panic!(),
+                    None => return args,
                 };
                 match val {
                     Ok(TokenKind::Ident(arg_type_str)) => {
@@ -21,7 +21,10 @@ impl Parser<'_> {
                             ArgumentType::from_string(&arg_type_str).unwrap_or_else(|| {
                                 self.errors.push(ParserError {
                                     input: input_str,
-                                    message: format!("Invalid argument type: {}", arg_type_str),
+                                    message: format!(
+                                        "argument type: {} is not valid",
+                                        arg_type_str
+                                    ),
                                     line: loc.start,
                                     column: loc.end,
                                 });
@@ -39,7 +42,7 @@ impl Parser<'_> {
                     _ => {
                         self.errors.push(ParserError {
                             input: input_str,
-                            message: "Expected argument type after colon".to_string(),
+                            message: "did not find argument type after colon".to_string(),
                             line: loc.start,
                             column: loc.end,
                         });
@@ -50,7 +53,7 @@ impl Parser<'_> {
             _ => {
                 self.errors.push(ParserError {
                     input: input_str,
-                    message: "Expected colon after argument name".to_string(),
+                    message: "expected a colon after argument name to denote type".to_string(),
                     line: loc.start,
                     column: loc.end,
                 });
@@ -80,7 +83,7 @@ impl Parser<'_> {
                 _ => {
                     self.errors.push(ParserError {
                         input: self.input.to_string(),
-                        message: "Invalid macro argument syntax".to_string(),
+                        message: "expected a macro argument here, did not find".to_string(),
                         line: l.start,
                         column: l.end,
                     });
@@ -89,7 +92,7 @@ impl Parser<'_> {
         }
         let (val, loc) = match self.lexer.next() {
             Some((v, l)) => (v, l),
-            None => panic!(),
+            None => return tokens,
         };
         match val {
             Ok(TokenKind::LeftBrace) => {
@@ -109,7 +112,7 @@ impl Parser<'_> {
                         _ => {
                             self.errors.push(ParserError {
                                 input: self.input.to_string(),
-                                message: "Invalid token in macro body".to_string(),
+                                message: "error/reached EOF in macro body".to_string(),
                                 line: span.start,
                                 column: span.end,
                             });
@@ -125,7 +128,7 @@ impl Parser<'_> {
             _ => {
                 self.errors.push(ParserError {
                     input: input_str,
-                    message: "Expected open brace to start macro body".to_string(),
+                    message: "did not find open brace to start macro body".to_string(),
                     line: loc.start,
                     column: loc.end,
                 });
@@ -146,7 +149,7 @@ impl Parser<'_> {
         } else {
             self.errors.push(ParserError {
                 input: input_str,
-                message: "expected ident after macro decl".to_string(),
+                message: "the macro needs a name".to_string(),
                 line: loc.start,
                 column: loc.end,
             });
@@ -155,7 +158,7 @@ impl Parser<'_> {
 
         let (val, loc) = match self.lexer.next() {
             Some((v, l)) => (v, l),
-            None => panic!(),
+            None => return tokens,
         };
         match val {
             Ok(TokenKind::LeftParen) => {
@@ -164,7 +167,7 @@ impl Parser<'_> {
             _ => {
                 self.errors.push(ParserError {
                     input: input_str,
-                    message: "Expected open paren after macro name".to_string(),
+                    message: "didn't find open parantheses after macro name".to_string(),
                     line: loc.start,
                     column: loc.end,
                 });

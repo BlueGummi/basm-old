@@ -42,7 +42,7 @@ impl<'a> Parser<'a> {
                 Err(()) => {
                     self.errors.push(ParserError {
                         input: self.input.to_string(),
-                        message: "Unexpected token".to_string(),
+                        message: "Unknown error encountered whilst parsing".to_string(),
                         line: span.start,
                         column: span.end,
                     });
