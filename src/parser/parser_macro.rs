@@ -42,7 +42,7 @@ impl Parser<'_> {
                     _ => {
                         self.errors.push(ParserError {
                             input: input_str,
-                            message: "did not find argument type after colon".to_string(),
+                            message: "this is not a macro argument".to_string(),
                             line: loc.start,
                             column: loc.end,
                         });
@@ -53,7 +53,7 @@ impl Parser<'_> {
             _ => {
                 self.errors.push(ParserError {
                     input: input_str,
-                    message: "expected a colon after argument name to denote type".to_string(),
+                    message: "expected argument type".to_string(),
                     line: loc.start,
                     column: loc.end,
                 });
@@ -73,7 +73,7 @@ impl Parser<'_> {
                 None => return tokens,
             };
             match val {
-                Ok(TokenKind::Tab) | Ok(TokenKind::Whitespace) | Ok(TokenKind::Comma) => {
+                Ok(TokenKind::Comma) => {
                     continue;
                 }
                 Ok(TokenKind::Ident(arg_name)) => {
@@ -83,10 +83,11 @@ impl Parser<'_> {
                 _ => {
                     self.errors.push(ParserError {
                         input: self.input.to_string(),
-                        message: "expected a macro argument here, did not find".to_string(),
+                        message: "expected a macro argument".to_string(),
                         line: l.start,
                         column: l.end,
                     });
+                    break;
                 }
             }
         }
@@ -128,7 +129,7 @@ impl Parser<'_> {
             _ => {
                 self.errors.push(ParserError {
                     input: input_str,
-                    message: "did not find open brace to start macro body".to_string(),
+                    message: "did not find open brace for macro body".to_string(),
                     line: loc.start,
                     column: loc.end,
                 });
@@ -149,7 +150,7 @@ impl Parser<'_> {
         } else {
             self.errors.push(ParserError {
                 input: input_str,
-                message: "the macro needs a name".to_string(),
+                message: "macro name required".to_string(),
                 line: loc.start,
                 column: loc.end,
             });
