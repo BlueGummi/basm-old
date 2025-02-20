@@ -43,6 +43,7 @@ label: macro_rules! fanf ( arg1 : reg, arg2 : imm, arg3 : mem, arg4 : ireg, arg5
             for error in e {
                 println!("{error}");
             }
+            std::process::exit(1);
         }
     }
 }
