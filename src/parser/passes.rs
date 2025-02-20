@@ -10,68 +10,42 @@ impl<'a> Parser<'a> {
         let mut tokens = Vec::new();
         let mut lexer = lexer.peekable();
         let mut errors = Vec::new();
+
         while let Some((token, span)) = lexer.next() {
             match token {
                 Ok(TokenKind::Ident(ident)) => {
                     if let Some((Ok(TokenKind::Colon), _)) = lexer.peek() {
                         let (_, _) = lexer.next().unwrap();
-
                         tokens.push((Ok(TokenKind::Label(ident)), span));
                     } else {
                         tokens.push((Ok(TokenKind::Ident(ident)), span));
                     }
                 }
-
                 Ok(TokenKind::LeftParen) => 'lpn: {
-                    let mut peek_iter = lexer.clone();
-                    while let Some((peek_token, _)) = peek_iter.peek() {
-                        match peek_token {
-                            Ok(TokenKind::Newline) => break,
-                            Ok(TokenKind::Colon) | Ok(TokenKind::LeftBrace) => {
-                                tokens.push((Ok(TokenKind::LeftParen), span));
-                                break 'lpn;
-                            }
-                            _ => {
-                                peek_iter.next();
-                            }
+                    match parse_expression_after_left_paren(&file, input.to_string(), &mut lexer) {
+                        Ok(Some((value, new_span))) => {
+                            tokens.push((Ok(TokenKind::IntLit(value)), new_span));
                         }
-                    }
-
-                    while let Some((token, _)) = lexer.peek() {
-                        match token {
-                            Ok(TokenKind::Comma) => {
-                                lexer.next();
-                            }
-                            Ok(TokenKind::Newline) => {
-                                break 'lpn;
-                            }
-                            Ok(_) => {
-                                match evaluate_expression(&file, input.to_string(), &mut lexer) {
-                                    Ok(v) => tokens.push((Ok(TokenKind::IntLit(v)), span.clone())),
-                                    Err(e) => {
-                                        errors.push(e);
-                                    }
-                                }
-                                lexer.next();
-                            }
-                            _ => {
-                                lexer.next();
-                            }
+                        Ok(None) => {
+                            tokens.push((Ok(TokenKind::LeftParen), span));
+                            break 'lpn;
+                        }
+                        Err(e) => {
+                            errors.push(e);
                         }
                     }
                 }
-
                 _ => {
                     tokens.push((token, span));
                 }
             }
         }
+
         if !errors.is_empty() {
             return Err(errors);
         }
         Ok(tokens)
     }
-
     pub fn second_pass(
         &mut self,
         tokens: Vec<(Result<TokenKind, ()>, std::ops::Range<usize>)>,
@@ -133,4 +107,61 @@ impl<'a> Parser<'a> {
         }
         new_tokens
     }
+}
+
+fn parse_expression_after_left_paren(
+    file: &str,
+    input: String,
+    lexer: &mut std::iter::Peekable<logos::SpannedIter<'_, TokenKind>>,
+) -> Result<Option<(i64, logos::Span)>, ParserError> {
+    let mut peek_iter = lexer.clone();
+    while let Some((peek_token, _)) = peek_iter.peek() {
+        match peek_token {
+            Ok(TokenKind::Newline) => break,
+            Ok(TokenKind::Colon) | Ok(TokenKind::LeftBrace) => {
+                return Ok(None);
+            }
+            _ => {
+                peek_iter.next();
+            }
+        }
+    }
+
+    loop {
+        let next_token = lexer.peek().cloned();
+        match next_token {
+            Some((Ok(TokenKind::Comma), _)) => {
+                lexer.next();
+            }
+            Some((Ok(TokenKind::Newline), _)) => {
+                break;
+            }
+            Some((Ok(_), span)) => {
+                let value = evaluate_expression(&file.to_string(), input.to_string(), lexer)?;
+                return Ok(Some((value, span.clone())));
+            }
+            Some((Err(_), span)) => {
+                return Err(ParserError {
+                    file: file.to_string(),
+                    help: None,
+                    input: input.to_string(),
+                    message: String::from("invalid token in expression"),
+                    start_pos: span.start,
+                    last_pos: span.end,
+                });
+            }
+            None => {
+                break;
+            }
+        }
+    }
+
+    Err(ParserError {
+        file: file.to_string(),
+        help: None,
+        input: input.to_string(),
+        message: String::from("failed to parse expression after left paren"),
+        start_pos: 0,
+        last_pos: 0,
+    })
 }

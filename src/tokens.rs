@@ -173,7 +173,7 @@ fn parse_bracketed_content(slice: &str) -> Box<TokenKind> {
     } else if content.chars().all(|c| c.is_ascii_digit()) {
         Box::new(TokenKind::IntLit(content.parse::<i64>().unwrap()))
     } else {
-        Box::new(TokenKind::Ident(slice[1..slice.len()-1].to_string()))
+        Box::new(TokenKind::Ident(slice[1..slice.len() - 1].to_string()))
     }
 }
 impl TokenKind {
