@@ -9,6 +9,7 @@ label: macro_rules! fanf ( arg1 : reg, arg2 : imm, arg3 : mem, arg4 : ireg, arg5
     lea r2, [0xff]
     mov r0, &[0x0]
     ld r2, [v]
+    macro_rules! data
     label_again: .asciiz "My text"
     .word 'm'
     label: nand r4, (2 * 2)
