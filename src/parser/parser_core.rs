@@ -15,7 +15,7 @@ impl<'a> Parser<'a> {
         let errors = Vec::new();
         let lexer = TokenKind::lexer(input).spanned();
 
-        let first_pass_tokens = Self::first_pass(input.to_string(), lexer);
+        let first_pass_tokens = Self::first_pass(file.to_string(), input.to_string(), lexer);
         let second_pass_tokens = Self::second_pass(
             &mut Parser {
                 file: file.to_string(),
@@ -32,7 +32,7 @@ impl<'a> Parser<'a> {
             errors,
         }
     }
-    pub fn parse(&mut self) -> Result<Vec<TokenKind>, &Vec<ParserError>> {
+    pub fn parse(&mut self) -> Result<Vec<(TokenKind, std::ops::Range<usize>)>, &Vec<ParserError>> {
         let mut tokens = Vec::new();
 
         while let Some((token, span)) = self.lexer.next() {
@@ -40,10 +40,14 @@ impl<'a> Parser<'a> {
                 Ok(TokenKind::Whitespace) | Ok(TokenKind::Tab) => {}
                 Ok(TokenKind::MacroDef(_)) => tokens.extend(self.parse_single_macro()),
                 Ok(t) => {
-                    tokens.push(t);
+                    tokens.push((t, span));
                 }
                 Err(()) => {
                     self.errors.push(ParserError {
+                        file: self.file.to_string(),
+                        help: Some(String::from(
+                            "this is likely an internal error, please report it",
+                        )),
                         input: self.input.to_string(),
                         message: "Unknown error encountered whilst parsing".to_string(),
                         start_pos: span.start,

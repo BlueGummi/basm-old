@@ -1,7 +1,10 @@
 use crate::*;
 
 impl Parser<'_> {
-    fn parse_single_macro_argument(&mut self, arg_name: String) -> Vec<FullArgument> {
+    fn parse_single_macro_argument(
+        &mut self,
+        arg_name: String,
+    ) -> Vec<(FullArgument, std::ops::Range<usize>)> {
         let input_str = self.input.to_string();
         let (val, loc) = match self.lexer.next() {
             Some((v, l)) => (v, l),
@@ -13,6 +16,8 @@ impl Parser<'_> {
                 let mut leave = false;
                 let arg_type = ArgumentType::from_string(&arg_type_str).unwrap_or_else(|| {
                     self.errors.push(ParserError {
+                        file: self.file.to_string(),
+                        help: Some(String::from("valid argument types are\n         reg, ireg, mem, imem, imm, and label")),
                         input: input_str,
                         message: format!("argument type: {} is not valid", arg_type_str),
                         start_pos: loc.start,
@@ -24,13 +29,18 @@ impl Parser<'_> {
                 if leave {
                     return args;
                 }
-                args.push(FullArgument {
-                    name: arg_name.to_string(),
-                    arg_type,
-                });
+                args.push((
+                    FullArgument {
+                        name: arg_name.to_string(),
+                        arg_type,
+                    },
+                    loc,
+                ));
             }
             _ => {
                 self.errors.push(ParserError {
+                    file: self.file.to_string(),
+                    help: Some(String::from("add a type after the ':'")),
                     input: input_str,
                     message: "expected argument type".to_string(),
                     start_pos: loc.start,
@@ -42,7 +52,7 @@ impl Parser<'_> {
         args
     }
 
-    fn parse_macro_arguments(&mut self, name: String) -> Vec<TokenKind> {
+    fn parse_macro_arguments(&mut self, name: String) -> Vec<(TokenKind, std::ops::Range<usize>)> {
         let input_str = self.input.to_string();
         let mut tokens = Vec::new();
         let mut args = Vec::new();
@@ -61,6 +71,10 @@ impl Parser<'_> {
                 Ok(TokenKind::RightParen) => break,
                 _ => {
                     self.errors.push(ParserError {
+                        file: self.file.to_string(),
+                        help: Some(String::from(
+                            "macro arguments should go between the '(' ')'",
+                        )),
                         input: self.input.to_string(),
                         message: "expected a macro argument".to_string(),
                         start_pos: l.start,
@@ -88,9 +102,11 @@ impl Parser<'_> {
                                 break;
                             }
                         }
-                        Ok(t) => macro_tokens.push(t),
+                        Ok(t) => macro_tokens.push((t, span)),
                         _ => {
                             self.errors.push(ParserError {
+                                file: self.file.to_string(),
+                                help: Some(String::from("close the macro with a '}'")),
                                 input: self.input.to_string(),
                                 message: "error/reached EOF in macro body".to_string(),
                                 start_pos: span.start,
@@ -99,14 +115,19 @@ impl Parser<'_> {
                         }
                     }
                 }
-                tokens.push(TokenKind::Macro(MacroContent {
-                    name,
-                    args,
-                    tokens: macro_tokens,
-                }));
+                tokens.push((
+                    TokenKind::Macro(MacroContent {
+                        name,
+                        args,
+                        tokens: macro_tokens,
+                    }),
+                    loc,
+                ));
             }
             _ => {
                 self.errors.push(ParserError {
+                    file: self.file.to_string(),
+                    help: None,
                     input: input_str,
                     message: "did not find open brace for macro body".to_string(),
                     start_pos: loc.start,
@@ -117,7 +138,7 @@ impl Parser<'_> {
         tokens
     }
 
-    pub fn parse_single_macro(&mut self) -> Vec<TokenKind> {
+    pub fn parse_single_macro(&mut self) -> Vec<(TokenKind, std::ops::Range<usize>)> {
         let input_str = self.input.to_string();
         let mut tokens = Vec::new();
         let (val, loc) = match self.lexer.next() {
@@ -128,6 +149,8 @@ impl Parser<'_> {
             v
         } else {
             self.errors.push(ParserError {
+                file: self.file.to_string(),
+                help: Some(String::from("add a macro name after the declaration")),
                 input: input_str,
                 message: "macro name required".to_string(),
                 start_pos: loc.start,
@@ -146,6 +169,8 @@ impl Parser<'_> {
             }
             _ => {
                 self.errors.push(ParserError {
+                    file: self.file.to_string(),
+                    help: None,
                     input: input_str,
                     message: "didn't find open parantheses after macro name".to_string(),
                     start_pos: loc.start,

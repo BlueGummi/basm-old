@@ -2,6 +2,7 @@ use crate::evaluate::evaluate_expression;
 use crate::*;
 impl<'a> Parser<'a> {
     pub fn first_pass(
+        file: String,
         input: String,
         lexer: logos::SpannedIter<'a, TokenKind>,
     ) -> Vec<(Result<TokenKind, ()>, std::ops::Range<usize>)> {
@@ -19,6 +20,7 @@ impl<'a> Parser<'a> {
                         tokens.push((Ok(TokenKind::Ident(ident)), span));
                     }
                 }
+
                 Ok(TokenKind::LeftParen) => 'lpn: {
                     let mut peek_iter = lexer.clone();
                     while let Some((peek_token, _)) = peek_iter.peek() {
@@ -43,7 +45,7 @@ impl<'a> Parser<'a> {
                                 break 'lpn;
                             }
                             Ok(_) => {
-                                match evaluate_expression(input.to_string(), &mut lexer) {
+                                match evaluate_expression(&file, input.to_string(), &mut lexer) {
                                     Ok(v) => tokens.push((Ok(TokenKind::IntLit(v)), span.clone())),
                                     Err(e) => {
                                         println!("{e:?}");
@@ -99,7 +101,7 @@ impl<'a> Parser<'a> {
                         new_tokens.push((Ok(TokenKind::Ident(name)), span));
                     } else {
                         let mut args = Vec::new();
-                        while let Some((token, _)) = token_iter.peek() {
+                        while let Some((token, loc)) = token_iter.peek() {
                             match token {
                                 Ok(TokenKind::Comma) => {
                                     token_iter.next();
@@ -108,7 +110,7 @@ impl<'a> Parser<'a> {
                                     break;
                                 }
                                 Ok(t) => {
-                                    args.push(self.parse_argument(t.clone()));
+                                    args.push((self.parse_argument(t.clone()), loc.clone()));
                                     token_iter.next();
                                 }
                                 _ => {
