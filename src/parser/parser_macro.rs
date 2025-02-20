@@ -139,7 +139,7 @@ impl Parser<'_> {
         let mut tokens = Vec::new();
         let (val, loc) = match self.lexer.next() {
             Some((v, l)) => (v, l),
-            None => panic!(),
+            None => return tokens,
         };
         let name = if let Ok(TokenKind::Ident(v)) = val {
             v

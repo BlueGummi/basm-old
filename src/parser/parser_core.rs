@@ -15,47 +15,20 @@ impl<'a> Parser<'a> {
         let lexer = TokenKind::lexer(input).spanned();
 
         let first_pass_tokens = Self::first_pass(lexer);
-
+        let second_pass_tokens = Self::second_pass(
+            &mut Parser {
+                lexer: first_pass_tokens.clone().into_iter().peekable(),
+                input,
+                errors: Vec::new(),
+            },
+            first_pass_tokens,
+        );
         Parser {
-            lexer: first_pass_tokens.into_iter().peekable(),
+            lexer: second_pass_tokens.into_iter().peekable(),
             input,
             errors,
         }
     }
-
-    fn first_pass(
-        lexer: logos::SpannedIter<'a, TokenKind>,
-    ) -> Vec<(Result<TokenKind, ()>, std::ops::Range<usize>)> {
-        let mut tokens = Vec::new();
-        let mut lexer = lexer.peekable();
-
-        while let Some((token, span)) = lexer.next() {
-            match token {
-                Ok(TokenKind::Ident(ident)) => {
-                    if let Some((Ok(TokenKind::Colon), _)) = lexer.peek() {
-                        let (_, colon_span) = lexer.next().unwrap();
-
-                        if let Some((Ok(TokenKind::Ident(_)), _)) = lexer.peek() {
-                            // If another identifier follows, treat it as normal tokens
-                            tokens.push((Ok(TokenKind::Ident(ident)), span));
-                            tokens.push((Ok(TokenKind::Colon), colon_span));
-                        } else {
-                            // Otherwise, it's a label
-                            tokens.push((Ok(TokenKind::Label(ident)), span));
-                        }
-                    } else {
-                        tokens.push((Ok(TokenKind::Ident(ident)), span));
-                    }
-                }
-                _ => {
-                    tokens.push((token, span));
-                }
-            }
-        }
-
-        tokens
-    }
-
     pub fn parse(&mut self) -> Result<Vec<TokenKind>, &Vec<ParserError>> {
         let mut tokens = Vec::new();
 

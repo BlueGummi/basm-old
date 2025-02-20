@@ -1,0 +1,48 @@
+use crate::*;
+use std::iter::Peekable;
+use std::vec::IntoIter;
+
+impl<'a> Parser<'a> {
+    pub fn evaluate_expression(
+        &mut self,
+        token_iter: &mut Peekable<IntoIter<(Result<TokenKind, ()>, std::ops::Range<usize>)>>,
+    ) -> i64 {
+        let mut result = 0;
+        while let Some((token, _)) = token_iter.peek() {
+            match token {
+                Ok(TokenKind::RightParen) => {
+                    token_iter.next();
+                    break;
+                }
+                Ok(TokenKind::IntLit(num)) => {
+                    result = *num;
+                    token_iter.next();
+                }
+                Ok(TokenKind::Plus) => {
+                    token_iter.next();
+                    if let Some((Ok(TokenKind::IntLit(num)), _)) = token_iter.peek() {
+                        result += *num;
+                        token_iter.next();
+                    }
+                }
+                Ok(TokenKind::Minus) => {
+                    token_iter.next();
+                    if let Some((Ok(TokenKind::IntLit(num)), _)) = token_iter.peek() {
+                        result -= *num;
+                        token_iter.next();
+                    }
+                }
+                _ => {
+                    self.errors.push(ParserError {
+                        input: self.input.to_string(),
+                        message: "Invalid expression".to_string(),
+                        line: 0,
+                        column: 0,
+                    });
+                    break;
+                }
+            }
+        }
+        result
+    }
+}

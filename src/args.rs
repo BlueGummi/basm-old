@@ -40,10 +40,10 @@ impl ArgumentType {
 
 #[derive(Debug, PartialEq, Serialize, Clone)]
 pub enum InstructionArgument {
-    Mem(i64),
-    IMem(i64),
-    Reg(i64),
-    IReg(i64),
+    Mem(Box<TokenKind>),
+    IMem(Box<TokenKind>),
+    Reg(u8),
+    IReg(u8),
     Imm(i64),
     Ident(String),
     MacroIdent(String),

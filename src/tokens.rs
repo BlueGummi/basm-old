@@ -19,12 +19,6 @@ pub enum TokenKind {
     #[token(")")]
     RightParen,
 
-    #[token("[")]
-    LeftBracket,
-
-    #[token("]")]
-    RightBracket,
-
     #[token("{")]
     LeftBrace,
 
@@ -33,9 +27,6 @@ pub enum TokenKind {
 
     #[token(",")]
     Comma,
-
-    #[token(".")]
-    Dot,
 
     #[token("~")]
     Tilde,
@@ -130,6 +121,9 @@ pub enum TokenKind {
     #[regex("[a-zA-Z_][a-zA-Z0-9_]*", |lex| lex.slice().to_string())]
     Ident(String),
 
+    #[regex(r"\.[a-zA-Z_][a-zA-Z0-9_]*", |lex| lex.slice().to_string())]
+    Directive(String),
+
     #[regex("%[a-zA-Z_][a-zA-Z0-9_]*", |lex| lex.slice()[1..].to_string())]
     MacroIdent(String),
 
@@ -144,8 +138,31 @@ pub enum TokenKind {
     Instruction(InstructionData),
 
     Label(String),
-}
+    #[regex(r"\[([^\]]+)\]", |lex| parse_bracketed_content(lex.slice()))]
+    Mem(Box<TokenKind>),
 
+    #[regex(r"&\[([^\]]+)\]", |lex| parse_bracketed_content(&lex.slice()[1..]))]
+    IMem(Box<TokenKind>),
+
+    IIdent(String),
+    IReg(u8),
+    Imm(i64),
+    Expr(i64),
+}
+fn parse_bracketed_content(slice: &str) -> Box<TokenKind> {
+    let content = &slice[1..slice.len() - 1];
+    if content.starts_with("0x") || content.starts_with("0X") {
+        Box::new(TokenKind::HexLit(i64::from_str_radix(&content[2..], 16).unwrap()))
+    } else if content.starts_with("0b") || content.starts_with("0B") {
+        Box::new(TokenKind::BinLit(i64::from_str_radix(&content[2..], 2).unwrap()))
+    } else if content.starts_with("0o") || content.starts_with("0O") {
+        Box::new(TokenKind::OctLit(i64::from_str_radix(&content[2..], 8).unwrap()))
+    } else if content.chars().all(|c| c.is_digit(10)) {
+        Box::new(TokenKind::IntLit(content.parse::<i64>().unwrap()))
+    } else {
+        Box::new(TokenKind::Ident(slice.to_string()))
+    }
+}
 impl TokenKind {
     pub fn is_empty(&self) -> bool {
         matches!(self, TokenKind::Tab | TokenKind::Whitespace)
