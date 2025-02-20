@@ -55,12 +55,14 @@ impl fmt::Display for ParserError {
                 let left_char = if self.help.is_some() { "├" } else { "╰" };
                 writeln!(
                     f,
-                    "{} {}:{}:{}",
+                    "{}{} {}:{}:{}",
                     left_char.bright_red(),
+                    "─".bright_red(),
                     self.file.green(),
                     line_number + 1,
                     error_start
                 )?;
+                let leading_spaces = line.chars().take_while(|&c| c == ' ').count();
                 let left_char = if self.help.is_some() { "│" } else { " " };
                 writeln!(
                     f,
@@ -68,9 +70,9 @@ impl fmt::Display for ParserError {
                     left_char.bright_red(),
                     (line_number + 1).to_string().blue(),
                     "│".blue(),
-                    line
+                    line.trim()
                 )?;
-                let spaces = " ".repeat(error_start + 9);
+                let spaces = " ".repeat(error_start + 9 - leading_spaces);
                 let arrows = "^".repeat(error_end.saturating_sub(error_start));
                 write!(
                     f,
