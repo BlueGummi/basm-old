@@ -4,19 +4,21 @@ use std::iter::Peekable;
 use std::vec::IntoIter;
 type ParsingLexer = Peekable<IntoIter<(Result<TokenKind, ()>, std::ops::Range<usize>)>>;
 pub struct Parser<'a> {
+    pub file: String,
     pub lexer: ParsingLexer,
     pub input: &'a str,
     pub errors: Vec<ParserError>,
 }
 
 impl<'a> Parser<'a> {
-    pub fn new(input: &'a str) -> Self {
+    pub fn new(file: String, input: &'a str) -> Self {
         let errors = Vec::new();
         let lexer = TokenKind::lexer(input).spanned();
 
         let first_pass_tokens = Self::first_pass(lexer);
         let second_pass_tokens = Self::second_pass(
             &mut Parser {
+                file: file.to_string(),
                 lexer: first_pass_tokens.clone().into_iter().peekable(),
                 input,
                 errors: Vec::new(),
@@ -24,6 +26,7 @@ impl<'a> Parser<'a> {
             first_pass_tokens,
         );
         Parser {
+            file,
             lexer: second_pass_tokens.into_iter().peekable(),
             input,
             errors,
@@ -43,8 +46,8 @@ impl<'a> Parser<'a> {
                     self.errors.push(ParserError {
                         input: self.input.to_string(),
                         message: "Unknown error encountered whilst parsing".to_string(),
-                        line: span.start,
-                        column: span.end,
+                        start_pos: span.start,
+                        last_pos: span.end,
                     });
                 }
             }

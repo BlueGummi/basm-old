@@ -5,20 +5,20 @@ use std::fmt;
 pub struct ParserError {
     pub input: String,
     pub message: String,
-    pub line: usize,   // Start index of the error in the input string
-    pub column: usize, // End index of the error in the input string
+    pub start_pos: usize, // Start index of the error in the input string
+    pub last_pos: usize,  // End index of the error in the input string
 }
 
 impl fmt::Display for ParserError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if self.line >= self.input.len()
-            || self.column > self.input.len()
-            || self.line >= self.column
+        if self.start_pos >= self.input.len()
+            || self.last_pos > self.input.len()
+            || self.start_pos >= self.last_pos
         {
             return writeln!(
                 f,
                 "Error: Indices {}:{} are out of bounds or invalid.",
-                self.line, self.column
+                self.start_pos, self.last_pos
             );
         }
         let lines: Vec<&str> = self.input.lines().collect();
@@ -31,16 +31,16 @@ impl fmt::Display for ParserError {
                 .sum::<usize>();
             let line_end = line_start + line.len();
 
-            if (line_start <= self.line && self.line < line_end)
-                || (line_start <= self.column && self.column < line_end)
+            if (line_start <= self.start_pos && self.start_pos < line_end)
+                || (line_start <= self.last_pos && self.last_pos < line_end)
             {
-                let error_start = if self.line >= line_start {
-                    self.line - line_start
+                let error_start = if self.start_pos >= line_start {
+                    self.start_pos - line_start
                 } else {
                     0
                 };
-                let error_end = if self.column < line_end {
-                    self.column - line_start
+                let error_end = if self.last_pos < line_end {
+                    self.last_pos - line_start
                 } else {
                     line.len()
                 };

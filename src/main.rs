@@ -17,7 +17,7 @@ fn main() {
 }
 "#;
     println!("{input_string}");
-    let mut parser = Parser::new(input_string);
+    let mut parser = Parser::new(String::from("input.asm"), input_string);
     match parser.parse() {
         Ok(tokens) => {
             println!("{}", serde_json::to_string(&tokens).unwrap());

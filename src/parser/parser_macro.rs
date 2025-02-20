@@ -25,8 +25,8 @@ impl Parser<'_> {
                                         "argument type: {} is not valid",
                                         arg_type_str
                                     ),
-                                    line: loc.start,
-                                    column: loc.end,
+                                    start_pos: loc.start,
+                                    last_pos: loc.end,
                                 });
                                 leave = true;
                                 ArgumentType::Reg
@@ -43,8 +43,8 @@ impl Parser<'_> {
                         self.errors.push(ParserError {
                             input: input_str,
                             message: "this is not a macro argument".to_string(),
-                            line: loc.start,
-                            column: loc.end,
+                            start_pos: loc.start,
+                            last_pos: loc.end,
                         });
                         return args;
                     }
@@ -54,8 +54,8 @@ impl Parser<'_> {
                 self.errors.push(ParserError {
                     input: input_str,
                     message: "expected argument type".to_string(),
-                    line: loc.start,
-                    column: loc.end,
+                    start_pos: loc.start,
+                    last_pos: loc.end,
                 });
                 return args;
             }
@@ -84,8 +84,8 @@ impl Parser<'_> {
                     self.errors.push(ParserError {
                         input: self.input.to_string(),
                         message: "expected a macro argument".to_string(),
-                        line: l.start,
-                        column: l.end,
+                        start_pos: l.start,
+                        last_pos: l.end,
                     });
                     break;
                 }
@@ -114,8 +114,8 @@ impl Parser<'_> {
                             self.errors.push(ParserError {
                                 input: self.input.to_string(),
                                 message: "error/reached EOF in macro body".to_string(),
-                                line: span.start,
-                                column: span.end,
+                                start_pos: span.start,
+                                last_pos: span.end,
                             });
                         }
                     }
@@ -130,8 +130,8 @@ impl Parser<'_> {
                 self.errors.push(ParserError {
                     input: input_str,
                     message: "did not find open brace for macro body".to_string(),
-                    line: loc.start,
-                    column: loc.end,
+                    start_pos: loc.start,
+                    last_pos: loc.end,
                 });
             }
         }
@@ -151,8 +151,8 @@ impl Parser<'_> {
             self.errors.push(ParserError {
                 input: input_str,
                 message: "macro name required".to_string(),
-                line: loc.start,
-                column: loc.end,
+                start_pos: loc.start,
+                last_pos: loc.end,
             });
             return tokens;
         };
@@ -169,8 +169,8 @@ impl Parser<'_> {
                 self.errors.push(ParserError {
                     input: input_str,
                     message: "didn't find open parantheses after macro name".to_string(),
-                    line: loc.start,
-                    column: loc.end,
+                    start_pos: loc.start,
+                    last_pos: loc.end,
                 });
             }
         }
