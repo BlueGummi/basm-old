@@ -1,7 +1,7 @@
 use colored::*;
 use std::fmt;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ParserError {
     pub input: String,
     pub message: String,

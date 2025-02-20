@@ -1,14 +1,15 @@
 use crate::eval::evaluate_expression;
 use crate::*;
+type PassOne = Result<Vec<(Result<TokenKind, ()>, std::ops::Range<usize>)>, Vec<ParserError>>;
 impl<'a> Parser<'a> {
     pub fn first_pass(
         file: String,
         input: String,
         lexer: logos::SpannedIter<'a, TokenKind>,
-    ) -> Vec<(Result<TokenKind, ()>, std::ops::Range<usize>)> {
+    ) -> PassOne {
         let mut tokens = Vec::new();
         let mut lexer = lexer.peekable();
-
+        let mut errors = Vec::new();
         while let Some((token, span)) = lexer.next() {
             match token {
                 Ok(TokenKind::Ident(ident)) => {
@@ -48,8 +49,7 @@ impl<'a> Parser<'a> {
                                 match evaluate_expression(&file, input.to_string(), &mut lexer) {
                                     Ok(v) => tokens.push((Ok(TokenKind::IntLit(v)), span.clone())),
                                     Err(e) => {
-                                        println!("{e:?}");
-                                        panic!(); // :3 nothing will go wrong
+                                        errors.push(e); 
                                     }
                                 }
                                 lexer.next();
@@ -66,8 +66,10 @@ impl<'a> Parser<'a> {
                 }
             }
         }
-
-        tokens
+        if !errors.is_empty() {
+            return Err(errors);
+        }
+        Ok(tokens)
     }
 
     pub fn second_pass(

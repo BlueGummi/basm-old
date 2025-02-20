@@ -101,7 +101,15 @@ fn parse_primary(
     input: String,
     token_iter: &mut Evalex,
 ) -> Result<Expr, ParserError> {
-    if let Some((token, _)) = token_iter.next() {
+    let mut last_loc = 0..0;
+
+    if let Some((_, loc)) = token_iter.peek() {
+        last_loc = loc.clone();
+    }
+
+    if let Some((token, l)) = token_iter.next() {
+        last_loc = l.clone();
+
         match token {
             Ok(TokenKind::IntLit(num)) => Ok(Expr::Int(num)),
             Ok(TokenKind::LeftParen) => {
@@ -114,19 +122,28 @@ fn parse_primary(
                         help: None,
                         input: input.to_string(),
                         message: "unmatched parenthesis".to_string(),
-                        start_pos: 0,
-                        last_pos: 0,
+                        start_pos: last_loc.start,
+                        last_pos: last_loc.end,
                     })
                 }
             }
-            _ => Err(ParserError {
+            Ok(v) => Err(ParserError {
                 file: file.to_string(),
                 help: None,
                 input: input.to_string(),
-                message: "unexpected token".to_string(),
-                start_pos: 0,
-                last_pos: 0,
+                message: format!("unexpected {v}"), 
+                start_pos: last_loc.start,
+                last_pos: last_loc.end,
             }),
+            _ =>  Err(ParserError {
+                file: file.to_string(),
+                help: None,
+                input: input.to_string(),
+                message: String::from("reached an error while parsing expression\n      maybe the expression is invalid?"), 
+                start_pos: last_loc.start,
+                last_pos: last_loc.end,
+            }),
+
         }
     } else {
         Err(ParserError {
@@ -134,8 +151,8 @@ fn parse_primary(
             help: None,
             input: input.to_string(),
             message: "unexpected end of expression".to_string(),
-            start_pos: 0,
-            last_pos: 0,
+            start_pos: last_loc.start,
+            last_pos: last_loc.end,
         })
     }
 }

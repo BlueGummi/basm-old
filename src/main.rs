@@ -1,5 +1,11 @@
 use basm2::*;
 
+use once_cell::sync::Lazy;
+use std::collections::HashMap;
+use std::sync::Mutex;
+pub static VARIABLE_MAP: Lazy<Mutex<HashMap<String, (usize, i32)>>> =
+    Lazy::new(|| Mutex::new(HashMap::new()));
+
 fn main() {
     let input_string = r#"
 
@@ -8,6 +14,7 @@ label: macro_rules! fanf ( arg1 : reg, arg2 : imm, arg3 : mem, arg4 : ireg, arg5
     mov %arg1, %arg2 ; comment
     lea r2, [0xff]
     mov r0, &[0x0]
+    ld r2, [v]
     label_again: .asciiz "My text"
     .word 'm'
     label: nand r4, (2 * 2)
@@ -23,7 +30,15 @@ label: macro_rules! fanf ( arg1 : reg, arg2 : imm, arg3 : mem, arg4 : ireg, arg5
     add r0, ((3 + 3) * 5)
 "#;
     println!("{input_string}");
-    let mut parser = Parser::new(String::from("input.asm"), input_string);
+    let mut parser = match Parser::new(String::from("input.asm"), input_string) {
+        Ok(v) => v,
+        Err(e) => {
+            for er in e {
+                println!("{er}");
+            }
+            std::process::exit(1);
+        }
+    };
     match parser.parse() {
         Ok(tokens) => {
             println!("{}", serde_json::to_string_pretty(&tokens).unwrap());
