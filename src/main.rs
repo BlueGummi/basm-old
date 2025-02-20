@@ -7,7 +7,10 @@ fn main() {
     mov r0, &[0x0]
     label_again: .asciiz "My text"
     .word 'm'
-    %arg4:
+    nand r3, r3
+    push 0x8
+    pop 0o02
+    %arg5:
 }
 "#;
     println!("{input_string}");

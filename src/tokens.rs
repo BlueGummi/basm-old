@@ -152,12 +152,18 @@ pub enum TokenKind {
 fn parse_bracketed_content(slice: &str) -> Box<TokenKind> {
     let content = &slice[1..slice.len() - 1];
     if content.starts_with("0x") || content.starts_with("0X") {
-        Box::new(TokenKind::HexLit(i64::from_str_radix(&content[2..], 16).unwrap()))
+        Box::new(TokenKind::HexLit(
+            i64::from_str_radix(&content[2..], 16).unwrap(),
+        ))
     } else if content.starts_with("0b") || content.starts_with("0B") {
-        Box::new(TokenKind::BinLit(i64::from_str_radix(&content[2..], 2).unwrap()))
+        Box::new(TokenKind::BinLit(
+            i64::from_str_radix(&content[2..], 2).unwrap(),
+        ))
     } else if content.starts_with("0o") || content.starts_with("0O") {
-        Box::new(TokenKind::OctLit(i64::from_str_radix(&content[2..], 8).unwrap()))
-    } else if content.chars().all(|c| c.is_digit(10)) {
+        Box::new(TokenKind::OctLit(
+            i64::from_str_radix(&content[2..], 8).unwrap(),
+        ))
+    } else if content.chars().all(|c| c.is_ascii_digit()) {
         Box::new(TokenKind::IntLit(content.parse::<i64>().unwrap()))
     } else {
         Box::new(TokenKind::Ident(slice.to_string()))

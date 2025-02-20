@@ -1,12 +1,9 @@
 use crate::*;
 use std::iter::Peekable;
 use std::vec::IntoIter;
-
-impl<'a> Parser<'a> {
-    pub fn evaluate_expression(
-        &mut self,
-        token_iter: &mut Peekable<IntoIter<(Result<TokenKind, ()>, std::ops::Range<usize>)>>,
-    ) -> i64 {
+type Evalex = Peekable<IntoIter<(Result<TokenKind, ()>, std::ops::Range<usize>)>>;
+impl Parser<'_> {
+    pub fn evaluate_expression(&mut self, token_iter: &mut Evalex) -> i64 {
         let mut result = 0;
         while let Some((token, _)) = token_iter.peek() {
             match token {
