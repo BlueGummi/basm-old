@@ -49,9 +49,9 @@ impl fmt::Display for TokenKind {
             TokenKind::Instruction(data) => write!(f, "instruction({:?})", data),
             TokenKind::Label(value) => write!(f, "label({})", value),
             TokenKind::Mem(token) => write!(f, "memory({})", token),
-            TokenKind::IMem(token) => write!(f, "immediate memory({})", token),
-            TokenKind::IIdent(value) => write!(f, "immediate identifier({})", value),
-            TokenKind::IReg(value) => write!(f, "immediate register({})", value),
+            TokenKind::IMem(token) => write!(f, "indirect memory({})", token),
+            TokenKind::IIdent(value) => write!(f, "indirect identifier({})", value),
+            TokenKind::IReg(value) => write!(f, "indirect register({})", value),
             TokenKind::Imm(value) => write!(f, "immediate value({})", value),
             TokenKind::Expr(value) => write!(f, "expression value({})", value),
         }
