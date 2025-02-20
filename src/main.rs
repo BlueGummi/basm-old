@@ -1,11 +1,5 @@
 use basm2::*;
 
-use once_cell::sync::Lazy;
-use std::collections::HashMap;
-use std::sync::Mutex;
-pub static VARIABLE_MAP: Lazy<Mutex<HashMap<String, (usize, i32)>>> =
-    Lazy::new(|| Mutex::new(HashMap::new()));
-
 fn main() {
     let input_string = r#"
 
