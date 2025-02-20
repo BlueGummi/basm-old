@@ -35,7 +35,8 @@ label: macro_rules! fanf ( arg1 : reg, arg2 : imm, arg3 : mem, arg4 : ireg, arg5
     };
     match parser.parse() {
         Ok(tokens) => {
-            println!("{}", serde_json::to_string_pretty(&tokens).unwrap());
+            //println!("{#:?}", serde_json::to_string_pretty(&tokens).unwrap());
+            println!("{:#?}", tokens);
         }
         Err(e) => {
             for error in e {
