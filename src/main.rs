@@ -4,7 +4,7 @@ fn main() {
     let input_string = r#"
 
 const v = 3
-label: macro_rules! ( arg1 : reg, arg2 : imm, arg3 : mem, arg4 : ireg, arg5 : label ) { 
+label: macro_rules! fanf ( arg1 : reg, arg2 : imm, arg3 : mem, arg4 : ireg, arg5 : label ) { 
     mov %arg1, %arg2 ; comment
     lea r2, [0xff]
     mov r0, &[0x0]
@@ -19,6 +19,8 @@ label: macro_rules! ( arg1 : reg, arg2 : imm, arg3 : mem, arg4 : ireg, arg5 : la
     mov r0, (33 + 3)
 
     push (3 << 1)
+
+    add r0, ((3 + 3) * 5)
 "#;
     println!("{input_string}");
     let mut parser = Parser::new(String::from("input.asm"), input_string);
