@@ -131,7 +131,7 @@ fn parse_primary(
                 file: file.to_string(),
                 help: None,
                 input: input.to_string(),
-                message: format!("unexpected {v}"), 
+                message: format!("unexpected {v} in expression"), 
                 start_pos: last_loc.start,
                 last_pos: last_loc.end,
             }),

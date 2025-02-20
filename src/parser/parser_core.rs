@@ -2,7 +2,9 @@ use crate::*;
 use logos::Logos;
 use std::iter::Peekable;
 use std::vec::IntoIter;
+
 type ParsingLexer = Peekable<IntoIter<(Result<TokenKind, ()>, std::ops::Range<usize>)>>;
+
 pub struct Parser<'a> {
     pub file: String,
     pub lexer: ParsingLexer,

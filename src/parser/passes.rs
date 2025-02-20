@@ -49,7 +49,7 @@ impl<'a> Parser<'a> {
                                 match evaluate_expression(&file, input.to_string(), &mut lexer) {
                                     Ok(v) => tokens.push((Ok(TokenKind::IntLit(v)), span.clone())),
                                     Err(e) => {
-                                        errors.push(e); 
+                                        errors.push(e);
                                     }
                                 }
                                 lexer.next();
