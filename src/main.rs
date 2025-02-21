@@ -3,7 +3,7 @@ use basm2::*;
 fn main() {
     let input_string = r#"
 
-const v = (4 * 3)
+const     v = (4 * 3)
 label: macro_rules! fanf ( arg1 : reg, arg2 : imm, arg3 : mem, arg4 : ireg, arg5 : label ) { 
     mov %arg1, %arg2 ; comment
     mov r0, &[0x0]
