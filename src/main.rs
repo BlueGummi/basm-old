@@ -21,7 +21,7 @@ label: macro_rules! fanf ( arg1 : reg, arg2 : imm, arg3 : mem, arg4 : ireg, arg5
 
     push (3 << 1)
 
-    add r0, ((3 + 3) * 5)
+    add r0, ( 2 & ( 6 * 3 ) + (3 + 3) * 5)
     add r0, (3 & 4)
 
 "#;
@@ -38,7 +38,7 @@ label: macro_rules! fanf ( arg1 : reg, arg2 : imm, arg3 : mem, arg4 : ireg, arg5
     match parser.parse() {
         Ok(tokens) => {
             //println!("{#:?}", serde_json::to_string_pretty(&tokens).unwrap());
-            println!("{:#?}", tokens);
+            //println!("{:#?}", tokens);
         }
         Err(e) => {
             for error in e {
