@@ -169,8 +169,7 @@ fn parse_expression_after_left_paren(
                 last_pos: span.end,
             });
         }
-        None => {
-        }
+        None => {}
     }
 
     Err(ParserError {
