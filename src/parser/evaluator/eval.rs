@@ -9,10 +9,10 @@ pub fn parse_expression(
     token_iter: &mut Evalex,
 ) -> Result<Expr, ParserError> {
     let v = parse_bitwise(file, input, token_iter);
-    if let Ok(ref d) = v {
+    /* if let Ok(ref d) = v {
         let e = d.evaluate();
         println!("{e}\n{d}");
-    }
+    } */
     v
 }
 

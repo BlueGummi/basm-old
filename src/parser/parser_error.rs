@@ -73,8 +73,8 @@ impl fmt::Display for ParserError {
                 let left_char = if self.help.is_some() { "│" } else { " " };
 
                 if line.len() + 9 > terminal_width {
-                    let start = error_start.saturating_sub(terminal_width / 2 );
-                    let end = (error_end + terminal_width / 2 ).min(line.len());
+                    let start = error_start.saturating_sub(terminal_width / 2 - 7);
+                    let end = (error_end + terminal_width / 2 - 7).min(line.len());
                     let truncated_line = &line[start..end];
 
                     writeln!(
