@@ -9,10 +9,10 @@ pub fn parse_expression(
     token_iter: &mut Evalex,
 ) -> Result<Expr, ParserError> {
     let v = parse_bitwise(file, input, token_iter);
-    /* if let Ok(ref d) = v {
+    if let Ok(ref d) = v {
         let e = d.evaluate();
         println!("{e}\n{d}");
-    } */
+    }
     v
 }
 
@@ -26,7 +26,6 @@ pub fn parse_primary(
     if let Some((_, loc)) = token_iter.peek() {
         last_loc = loc.clone();
     }
-
     if let Some((token, l)) = token_iter.next() {
         last_loc = l.clone();
 
@@ -42,6 +41,23 @@ pub fn parse_primary(
                         help: None,
                         input: input.to_string(),
                         message: "unmatched parenthesis".to_string(),
+                        start_pos: last_loc.start,
+                        last_pos: last_loc.end,
+                    })
+                }
+            }
+            Ok(TokenKind::Ident(val)) => {
+                let vmap = VARIABLE_MAP.lock().unwrap();
+                if let Some((_, _, v)) = vmap.get(&val) {
+                    let val = Ok(Expr::Int(*v));
+                    std::mem::drop(vmap);
+                    val
+                } else {
+                    Err(ParserError {
+                        file: file.to_string(),
+                        help: None,
+                        input: input.to_string(),
+                        message: format!("constant with name {val} not found"), 
                         start_pos: last_loc.start,
                         last_pos: last_loc.end,
                     })

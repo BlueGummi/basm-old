@@ -4,7 +4,7 @@ fn main() {
     let input_string = r#"
 
 const v = (4 * 3)
-label: macro_rules! fanf  arg1 : reg, arg2 : imm, arg3 : mem, arg4 : ireg, arg5 : label ) { 
+label: macro_rules! fanf ( arg1 : reg, arg2 : imm, arg3 : mem, arg4 : ireg, arg5 : label ) { 
     mov %arg1, %arg2 ; comment
     mov r0, &[0x0]
     label_again: .asciiz "My text"
@@ -12,7 +12,7 @@ label: macro_rules! fanf  arg1 : reg, arg2 : imm, arg3 : mem, arg4 : ireg, arg5 
     label: nand r4, (2 * 2)
     %arg5:
 }
-    mov r0, (33 + 3)
+    mov r0, (v + 3)
 
     push (3 << 1)
 

@@ -10,12 +10,14 @@ impl<'a> Parser<'a> {
         let mut tokens = Vec::new();
         let mut lexer = lexer.peekable();
         let mut errors = Vec::new();
-
+        let mut const_names = Vec::new();
+        let mut prev_was_const = false;
         while let Some((token, span)) = lexer.next() {
             match token {
                 Ok(TokenKind::MacroDef(m)) => {
                     // this here to make sure leftparen doesn't
                     // accidentally start reading a macro
+                    prev_was_const = false;
                     tokens.push((Ok(TokenKind::MacroDef(m)), span));
                     'mdl: loop {
                         match lexer.next() {
@@ -36,6 +38,24 @@ impl<'a> Parser<'a> {
                         }
                     }
                 }
+                Ok(TokenKind::Constant(name)) => {
+                    const_names.push(name);
+                    prev_was_const = true;
+                    if let Some((Ok(TokenKind::Equal), _)) = lexer.peek() {
+                        lexer.next();
+                    } else {
+                        errors.push(ParserError {
+                            file: file.to_string(),
+                            help: None,
+                            input: input.to_string(),
+                            message: String::from(
+                                "constant requires equal sign to denote assignment",
+                            ),
+                            start_pos: span.start,
+                            last_pos: span.end,
+                        });
+                    }
+                }
                 Ok(TokenKind::Ident(ident)) => {
                     if let Some((Ok(TokenKind::Colon), _)) = lexer.peek() {
                         let (_, _) = lexer.next().unwrap();
@@ -43,11 +63,31 @@ impl<'a> Parser<'a> {
                     } else {
                         tokens.push((Ok(TokenKind::Ident(ident)), span));
                     }
+                    prev_was_const = false;
                 }
                 Ok(TokenKind::LeftParen) => 'lpn: {
                     match parse_expression_after_left_paren(&file, input.to_string(), &mut lexer) {
                         Ok(Some((value, new_span))) => {
-                            tokens.push((Ok(TokenKind::IntLit(value)), new_span));
+                            if prev_was_const {
+                                if let Some(n) = const_names.pop() {
+                                    let mut vmap = VARIABLE_MAP.lock().unwrap();
+                                    vmap.insert(n, (file.to_string(), new_span, value));
+                                    std::mem::drop(vmap);
+                                } else {
+                                    errors.push(ParserError {
+                                        file: file.to_string(),
+                                        help: None,
+                                        input: input.to_string(),
+                                        message: String::from(
+                                            "could not find associated constant value",
+                                        ),
+                                        start_pos: new_span.start,
+                                        last_pos: new_span.end,
+                                    });
+                                }
+                            } else {
+                                tokens.push((Ok(TokenKind::IntLit(value)), new_span));
+                            }
                         }
                         Ok(None) => {
                             tokens.push((Ok(TokenKind::LeftParen), span));
