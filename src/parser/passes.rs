@@ -98,6 +98,25 @@ impl<'a> Parser<'a> {
                     let mut addr_toks = Vec::new();
                     'mdl: loop {
                         match lexer.next() {
+                            // let's try to do math in it
+                            Some((Ok(TokenKind::LeftParen), span)) => {
+                                match parse_expression_after_left_paren(
+                                    &file,
+                                    input.to_string(),
+                                    &mut lexer,
+                                ) {
+                                    Ok(Some((value, new_span))) => {
+                                        addr_toks.push((TokenKind::IntLit(value), new_span));
+                                    }
+                                    Ok(None) => {
+                                        addr_toks.push((TokenKind::LeftParen, span));
+                                        break 'mdl;
+                                    }
+                                    Err(e) => {
+                                        errors.push(e);
+                                    }
+                                }
+                            }
                             Some((Ok(TokenKind::RightBracket), _)) => {
                                 break 'mdl;
                             }

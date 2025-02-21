@@ -28,7 +28,7 @@ const v = (4 * 3)
     ;add r0, (((( ( 6 * 3 ) + (3 + 3) * 5) & ( 6 * 3 ) + (3 + 3) * 5) * 2 + (3 * 4 + 2) & 33) + (( ( 6 * 3 ) + (3 + 3) * 5) & ( 6 * 3 ) + (3 + 3) * 5) * 2 + (3 * 4 + 2) & 33))
     const c = ((a * a) + (b * b))
     mov r0, (c)
-    [data]
+    [( 2 * (c + 3))]
 "#;
     println!("{input_string_2}");
     let my_macaroni = MacroContent {
