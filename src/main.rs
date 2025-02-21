@@ -21,7 +21,6 @@ label: macro_rules! fanf ( arg1 : reg, arg2 : imm, arg3 : mem, arg4 : ireg, arg5
 
 "#;
     let input_string_2 = r#"
-
 const v = (4 * 3)
     mov r0, (v + 2)
     const a = 5
