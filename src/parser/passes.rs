@@ -76,7 +76,9 @@ impl<'a> Parser<'a> {
                                 file: file.to_string(),
                                 help: None,
                                 input: input.to_string(),
-                                message: String::from("could not find associated constant for literal"),
+                                message: String::from(
+                                    "could not find associated constant for literal",
+                                ),
                                 start_pos: span.start,
                                 last_pos: span.end,
                             });
