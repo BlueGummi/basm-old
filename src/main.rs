@@ -22,6 +22,8 @@ label: macro_rules! fanf ( arg1 : reg, arg2 : imm, arg3 : mem, arg4 : ireg, arg5
     push (3 << 1)
 
     add r0, ((3 + 3) * 5)
+    add r0, (3 & 4)
+
 "#;
     println!("{input_string}");
     let mut parser = match Parser::new(String::from("input.asm"), input_string) {

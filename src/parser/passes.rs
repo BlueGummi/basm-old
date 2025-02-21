@@ -86,7 +86,9 @@ impl<'a> Parser<'a> {
                                     break;
                                 }
                                 Ok(t) => {
-                                    args.push((self.parse_argument(t.clone()), loc.clone()));
+                                    if let Some(v) = self.parse_argument(t.clone()) {
+                                        args.push((v, loc.clone()));
+                                    }
                                     token_iter.next();
                                 }
                                 _ => {
