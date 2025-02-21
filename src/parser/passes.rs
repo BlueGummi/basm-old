@@ -13,6 +13,29 @@ impl<'a> Parser<'a> {
 
         while let Some((token, span)) = lexer.next() {
             match token {
+                Ok(TokenKind::MacroDef(m)) => {
+                    // this here to make sure leftparen doesn't
+                    // accidentally start reading a macro
+                    tokens.push((Ok(TokenKind::MacroDef(m)), span));
+                    'mdl: loop {
+                        match lexer.next() {
+                            Some((Ok(TokenKind::LeftBrace), l)) => {
+                                tokens.push((Ok(TokenKind::LeftBrace), l));
+                                break 'mdl;
+                            }
+                            Some((Ok(TokenKind::Ident(ident)), span)) => {
+                                if let Some((Ok(TokenKind::Colon), _)) = lexer.peek() {
+                                    let (_, _) = lexer.next().unwrap();
+                                    tokens.push((Ok(TokenKind::Label(ident)), span));
+                                } else {
+                                    tokens.push((Ok(TokenKind::Ident(ident)), span));
+                                }
+                            }
+                            Some(v) => tokens.push(v),
+                            _ => break 'mdl,
+                        }
+                    }
+                }
                 Ok(TokenKind::Ident(ident)) => {
                     if let Some((Ok(TokenKind::Colon), _)) = lexer.peek() {
                         let (_, _) = lexer.next().unwrap();
@@ -44,6 +67,7 @@ impl<'a> Parser<'a> {
         if !errors.is_empty() {
             return Err(errors);
         }
+        println!("{tokens:#?}");
         Ok(tokens)
     }
     pub fn second_pass(
@@ -129,32 +153,24 @@ fn parse_expression_after_left_paren(
         }
     }
 
-    loop {
-        let next_token = lexer.peek().cloned();
-        match next_token {
-            Some((Ok(TokenKind::Comma), _)) => {
-                lexer.next();
-            }
-            Some((Ok(TokenKind::Newline), _)) => {
-                break;
-            }
-            Some((Ok(_), span)) => {
-                let value = evaluate_expression(&file.to_string(), input.to_string(), lexer)?;
-                return Ok(Some((value, span.clone())));
-            }
-            Some((Err(_), span)) => {
-                return Err(ParserError {
-                    file: file.to_string(),
-                    help: None,
-                    input: input.to_string(),
-                    message: String::from("invalid token in expression"),
-                    start_pos: span.start,
-                    last_pos: span.end,
-                });
-            }
-            None => {
-                break;
-            }
+    let next_token = lexer.peek().cloned();
+    match next_token {
+        Some((Ok(_), span)) => {
+            let value = evaluate_expression(&file.to_string(), input.to_string(), lexer)?;
+            return Ok(Some((value, span.clone())));
+        }
+        Some((Err(_), span)) => {
+            return Err(ParserError {
+                file: file.to_string(),
+                help: None,
+                input: input.to_string(),
+                message: String::from("invalid token in expression"),
+                start_pos: span.start,
+                last_pos: span.end,
+            });
+        }
+        None => {
+            break;
         }
     }
 
