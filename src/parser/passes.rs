@@ -170,7 +170,6 @@ fn parse_expression_after_left_paren(
             });
         }
         None => {
-            break;
         }
     }
 
