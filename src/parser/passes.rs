@@ -67,7 +67,6 @@ impl<'a> Parser<'a> {
         if !errors.is_empty() {
             return Err(errors);
         }
-        println!("{tokens:#?}");
         Ok(tokens)
     }
     pub fn second_pass(

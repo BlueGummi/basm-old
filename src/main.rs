@@ -6,15 +6,10 @@ fn main() {
 const v = 3
 label: macro_rules! fanf ( arg1 : reg, arg2 : imm, arg3 : mem, arg4 : ireg, arg5 : label ) { 
     mov %arg1, %arg2 ; comment
-    lea r2, [0xff]
     mov r0, &[0x0]
-    ld r2, [v]
     label_again: .asciiz "My text"
     .word 'm'
     label: nand r4, (2 * 2)
-    nand r3, r3
-    push 0x8
-    pop 0o02
     %arg5:
 }
     mov r0, (33 + 3)
@@ -38,7 +33,9 @@ label: macro_rules! fanf ( arg1 : reg, arg2 : imm, arg3 : mem, arg4 : ireg, arg5
     match parser.parse() {
         Ok(tokens) => {
             //println!("{#:?}", serde_json::to_string_pretty(&tokens).unwrap());
-            //println!("{:#?}", tokens);
+            for (element, span) in tokens {
+                println!("{}", element);
+            }
         }
         Err(e) => {
             for error in e {
