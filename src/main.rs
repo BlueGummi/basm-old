@@ -21,8 +21,16 @@ label: macro_rules! fanf ( arg1 : reg, arg2 : imm, arg3 : mem, arg4 : ireg, arg5
     hlt
 
 "#;
-    println!("{input_string}");
-    let mut parser = match Parser::new(String::from("input.asm"), input_string) {
+    let input_string_2 = r#"
+
+const v = (4 * 3)
+label: macro_rules! fanf ( arg1 : reg, arg2 : imm, arg3 : mem, arg4 : ireg, arg5 : label ) { 
+    mov r0, (v + 2)
+}
+
+"#;
+    println!("{input_string_2}");
+    let mut parser = match Parser::new(String::from("input.asm"), input_string_2) {
         Ok(v) => v,
         Err(e) => {
             for er in e {
