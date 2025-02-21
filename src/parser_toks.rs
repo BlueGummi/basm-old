@@ -88,6 +88,20 @@ pub struct InstructionData {
     pub args: Vec<(InstructionArgument, std::ops::Range<usize>)>,
 }
 
+impl fmt::Display for MemAddr {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "├── Indirect: {}", self.indirect)?;
+        for (i, (arg, _)) in self.content.iter().enumerate() {
+            if i != self.content.len() - 1 {
+                writeln!(f, "│   ├── {}", arg)?;
+            } else {
+                writeln!(f, "│   └── {}", arg)?;
+            }
+        }
+        Ok(())
+    }
+}
+
 impl fmt::Display for MacroContent {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         writeln!(f, "Macro: {}", self.name)?;

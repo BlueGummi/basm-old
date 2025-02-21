@@ -128,6 +128,7 @@ impl<'a> Parser<'a> {
                                     addr_toks.push(((TokenKind::Ident(ident)), span));
                                 }
                             }
+                            Some((Ok(TokenKind::RightParen), _)) => (),
                             Some((Ok(v), span)) => addr_toks.push((v, span)),
                             _ => break 'mdl,
                         }

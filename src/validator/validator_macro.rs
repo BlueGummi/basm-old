@@ -43,7 +43,7 @@ impl MacroContent {
                 } else {
                     return Err(MacroValidatorError {
                         err_input: self.full_data.to_string(),
-                        err_message: format!("expected a {}, found a {d}", arg.arg_type),
+                        err_message: format!("expected {}, found {d}", arg.arg_type),
                         help: None,
                         orig_input: orig_data.to_string(),
                         orig_pos: span.clone(),

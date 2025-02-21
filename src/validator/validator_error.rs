@@ -52,7 +52,7 @@ impl fmt::Display for MacroValidatorError<'_> {
             (
                 "",
                 self.err_input.to_string(),
-                format!(" in expansion of macro \"{}\"", self.mac.name),
+                format!(" in expansion of macro `{}`", self.mac.name),
                 &self.help,
                 self.mac.file.to_string(),
                 m_pos,
