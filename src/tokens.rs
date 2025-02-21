@@ -121,6 +121,9 @@ pub enum TokenKind {
     #[regex("%[a-zA-Z_][a-zA-Z0-9_]*", |lex| lex.slice()[1..].to_string())]
     MacroIdent(String),
 
+    #[regex(r"[a-zA-Z_][a-zA-Z0-9_]*!\(", |lex| lex.slice()[0..lex.slice().len() - 2].to_string())]
+    MacroCall(String),
+
     #[regex("%[a-zA-Z_][a-zA-Z0-9_]*:", |lex| lex.slice()[1..lex.slice().len() - 1].to_string())]
     MacroLabel(String),
 
@@ -139,6 +142,8 @@ pub enum TokenKind {
     IMem(Box<TokenKind>),
 
     IIdent(String),
+
+    #[regex("&[rR][0-9]", |lex| lex.slice()[2..].parse::<u8>().unwrap())]
     IReg(u8),
     Imm(i64),
     Expr(i64),

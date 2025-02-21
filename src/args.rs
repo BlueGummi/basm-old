@@ -4,6 +4,8 @@ use std::fmt;
 
 #[derive(Debug, PartialEq, Serialize, Clone)]
 pub struct MacroContent {
+    pub full_data: String,
+    pub file: String,
     pub name: String,
     pub args: Vec<(FullArgument, std::ops::Range<usize>)>,
     pub tokens: Vec<(TokenKind, std::ops::Range<usize>)>,
@@ -36,6 +38,35 @@ impl ArgumentType {
             "label" => Some(ArgumentType::Label),
             _ => None,
         }
+    }
+    pub fn equals(&self, t: TokenKind) -> bool {
+        use crate::ArgumentType::*;
+        (*self == Mem && t.is_mem())
+            || (*self == Reg && t.is_reg())
+            || (*self == Ireg && t.is_ireg())
+            || (*self == Imem && t.is_imem())
+            || (*self == Label && t.is_ident())
+    }
+}
+
+impl TokenKind {
+    pub fn is_imm(&self) -> bool {
+        matches!(self, TokenKind::IntLit(_))
+    }
+    pub fn is_mem(&self) -> bool {
+        matches!(self, TokenKind::Mem(_))
+    }
+    pub fn is_imem(&self) -> bool {
+        matches!(self, TokenKind::IMem(_))
+    }
+    pub fn is_reg(&self) -> bool {
+        matches!(self, TokenKind::Register(_))
+    }
+    pub fn is_ireg(&self) -> bool {
+        matches!(self, TokenKind::IReg(_))
+    }
+    pub fn is_ident(&self) -> bool {
+        matches!(self, TokenKind::Ident(_))
     }
 }
 
@@ -88,12 +119,12 @@ impl fmt::Display for FullArgument {
 impl fmt::Display for ArgumentType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            ArgumentType::Mem => write!(f, "Mem"),
-            ArgumentType::Imem => write!(f, "Imem"),
-            ArgumentType::Ireg => write!(f, "Ireg"),
-            ArgumentType::Imm => write!(f, "Imm"),
-            ArgumentType::Reg => write!(f, "Reg"),
-            ArgumentType::Label => write!(f, "Label"),
+            ArgumentType::Mem => write!(f, "memory direct"),
+            ArgumentType::Imem => write!(f, "memory indirect"),
+            ArgumentType::Ireg => write!(f, "register indirect"),
+            ArgumentType::Imm => write!(f, "immediate"),
+            ArgumentType::Reg => write!(f, "register"),
+            ArgumentType::Label => write!(f, "label"),
         }
     }
 }
