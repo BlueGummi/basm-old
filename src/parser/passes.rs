@@ -228,9 +228,12 @@ impl<'a> Parser<'a> {
                     while let Some((peek_token, _)) = peek_iter.peek() {
                         match peek_token {
                             Ok(TokenKind::Newline) => break,
-                            Ok(TokenKind::Colon) => has_colon = true,
-
+                            Ok(TokenKind::Label(_)) => {
+                                has_colon = true;
+                                break;
+                            }
                             Ok(TokenKind::LeftBrace) | Ok(TokenKind::StringLit(_)) => {
+                                has_colon = true;
                                 break;
                             }
                             _ => {

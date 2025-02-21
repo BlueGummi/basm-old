@@ -28,9 +28,12 @@ const v = (4 * 3)
     ;add r0, (((( ( 6 * 3 ) + (3 + 3) * 5) & ( 6 * 3 ) + (3 + 3) * 5) * 2 + (3 * 4 + 2) & 33) + (( ( 6 * 3 ) + (3 + 3) * 5) & ( 6 * 3 ) + (3 + 3) * 5) * 2 + (3 * 4 + 2) & 33))
     const c = ((a * a) + (b * b))
     mov r0, (c)
+    macro_rules! fnaf ( arg1 : imm ) {
+        mov r0, %arg1
+    }
     [( 2 * (c + 3))]
 "#;
-    println!("{input_string_2}");
+    println!("{input_string}");
     let my_macaroni = MacroContent {
         full_data: String::from("macro_rules! ka ( frank: reg ) {"),
         file: String::from("aw"),
@@ -49,7 +52,7 @@ const v = (4 * 3)
         // this is working
         println!("{e}");
     }
-    let mut parser = match Parser::new(String::from("input.asm"), input_string_2) {
+    let mut parser = match Parser::new(String::from("input.asm"), input_string) {
         Ok(v) => v,
         Err(e) => {
             for er in e {
