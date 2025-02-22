@@ -13,7 +13,7 @@ label: macro_rules! silly ( arg1: reg, arg2: imm, arg3: reg, arg4: mem) {
 }
     const memloc = 0xff
     lea r0, [(memloc + 3)]
-    silly!(r3, 3, r2, [0xffff])
+    illy!(r3, 3, r2, [0xffff])
 add r0, (((( ( 6 * 3 ) + (3 + 3) * 5) & ( 6 * 3 ) + (3 + 3) * 5) * 2 + (3 * 4 + 2) & 33) + (( ( 6 * 3 ) + (3 + 3) * 5) & ( 6 * 3 ) + (3 + 3) * 5) * 2 + (3 * 4 + 2) & 33))
 "#;
     println!("{input_string}");
@@ -212,7 +212,11 @@ add r0, (((( ( 6 * 3 ) + (3 + 3) * 5) & ( 6 * 3 ) + (3 + 3) * 5) * 2 + (3 * 4 + 
         if let RightParen = element {
             in_call = false;
             if let Some((_, m)) = curr_mac {
-                match m.is_valid(input_string.to_string(), mac_call_data.clone()) {
+                match m.is_valid(
+                    fname.to_string(),
+                    input_string.to_string(),
+                    mac_call_data.clone(),
+                ) {
                     Ok(v) => {
                         expanded_loc_map.insert(counter, v.clone());
                         expanded_indices.push(counter);

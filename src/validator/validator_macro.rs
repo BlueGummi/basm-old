@@ -5,6 +5,7 @@ use std::collections::HashMap;
 impl MacroContent {
     pub fn is_valid(
         &self,
+        err_file: String,
         orig_data: String,
         toks: Vec<(TokenKind, std::ops::Range<usize>)>, // incoming macro args
     ) -> Result<Vec<(TokenKind, std::ops::Range<usize>)>, Vec<MacroValidatorError>> {
@@ -26,6 +27,7 @@ impl MacroContent {
                 TokenKind::Comma => None,
                 _ => {
                     errs.push(MacroValidatorError {
+                        err_file: err_file.to_string(),
                         err_input: self.full_data.to_string(),
                         err_message: format!("a {token} is not a valid macro argument"),
                         help: None,
@@ -52,6 +54,7 @@ impl MacroContent {
         };
         if parsed_toks.len() != self.args.len() {
             errs.push(MacroValidatorError {
+                err_file: err_file.to_string(),
                 err_input: self.full_data.to_string(),
                 err_message: format!(
                     "expected {} arguments, found {}",
@@ -70,6 +73,7 @@ impl MacroContent {
                     continue;
                 } else {
                     errs.push(MacroValidatorError {
+                        err_file: err_file.to_string(),
                         err_input: self.full_data.to_string(),
                         err_message: format!("expected {}, found {d}", arg.arg_type),
                         help: None,
@@ -81,6 +85,7 @@ impl MacroContent {
                 }
             } else {
                 errs.push(MacroValidatorError {
+                    err_file: err_file.to_string(),
                     err_input: self.full_data.to_string(),
                     err_message: String::from("an incorrect number of arguments were supplied"),
                     help: None, // borrow checker is yappin
@@ -131,6 +136,7 @@ impl MacroContent {
                 };
                 if let Err(e) = reconstruct.is_valid() {
                     errs.push(MacroValidatorError {
+                        err_file: err_file.to_string(),
                         err_input: self.full_data.to_string(),
                         err_message: e,
                         help: None,

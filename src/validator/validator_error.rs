@@ -5,6 +5,7 @@ use term_size::dimensions;
 
 #[derive(Debug, Clone)]
 pub struct MacroValidatorError {
+    pub err_file: String,
     pub err_input: String,
     pub err_message: String,
     pub help: Option<String>,
@@ -42,7 +43,7 @@ impl fmt::Display for MacroValidatorError {
                 self.orig_input.to_string(),
                 self.err_message.to_string(),
                 &Some(String::from("")),
-                self.mac.file.to_string(),
+                self.err_file.to_string(),
                 self.orig_pos.clone(),
             ),
             lines,
