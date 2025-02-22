@@ -1,14 +1,12 @@
 use crate::eval::evaluate_expression;
 use crate::*;
 type PassOne = Result<Vec<(Result<TokenKind, ()>, std::ops::Range<usize>)>, Vec<ParserError>>;
-impl<'a> Parser<'a>
-{
+impl<'a> Parser<'a> {
     pub fn first_pass(
         file: String,
         input: String,
         lexer: logos::SpannedIter<'a, TokenKind>,
-    ) -> PassOne
-    {
+    ) -> PassOne {
         let mut tokens = Vec::new();
         let mut lexer = lexer.peekable();
         let mut errors = Vec::new();
@@ -196,8 +194,7 @@ impl<'a> Parser<'a>
     pub fn second_pass(
         &mut self,
         tokens: Vec<(Result<TokenKind, ()>, std::ops::Range<usize>)>,
-    ) -> Vec<(Result<TokenKind, ()>, std::ops::Range<usize>)>
-    {
+    ) -> Vec<(Result<TokenKind, ()>, std::ops::Range<usize>)> {
         let mut new_tokens = Vec::new();
         let mut token_iter = tokens.into_iter().peekable();
         while let Some((token, span)) = token_iter.next() {
@@ -291,8 +288,7 @@ fn parse_expression_after_left_paren(
     file: &str,
     input: String,
     lexer: &mut std::iter::Peekable<logos::SpannedIter<'_, TokenKind>>,
-) -> Result<Option<(i64, logos::Span)>, ParserError>
-{
+) -> Result<Option<(i64, logos::Span)>, ParserError> {
     let mut peek_iter = lexer.clone();
     while let Some((peek_token, _)) = peek_iter.peek() {
         match peek_token {

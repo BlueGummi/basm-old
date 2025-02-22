@@ -2,15 +2,13 @@ use crate::*;
 use std::collections::HashMap;
 
 #[allow(suspicious_double_ref_op)]
-impl MacroContent
-{
+impl MacroContent {
     pub fn is_valid(
         &self,
         err_file: String,
         orig_data: String,
         toks: Vec<(TokenKind, std::ops::Range<usize>)>, // incoming macro args
-    ) -> Result<Vec<(TokenKind, std::ops::Range<usize>)>, Vec<MacroValidatorError>>
-    {
+    ) -> Result<Vec<(TokenKind, std::ops::Range<usize>)>, Vec<MacroValidatorError>> {
         // okay... here, I need to check first if the token types of the input
         // match the tokens inside of the macro.
         // what I can do, is I can iterate through the input tokens, and iterate through the arguments

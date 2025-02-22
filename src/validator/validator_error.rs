@@ -4,8 +4,7 @@ use std::fmt;
 use term_size::dimensions;
 
 #[derive(Debug, Clone)]
-pub struct MacroValidatorError
-{
+pub struct MacroValidatorError {
     pub err_file: String,
     pub err_input: String,
     pub err_message: String,
@@ -15,10 +14,8 @@ pub struct MacroValidatorError
     pub mac: MacroContent,
 }
 
-impl fmt::Display for MacroValidatorError
-{
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result
-    {
+impl fmt::Display for MacroValidatorError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let s_pos = self.mac.name.1.start;
         let e_pos = if let Some((_, _, v)) = self.mac.args.last() {
             v.end
@@ -80,8 +77,7 @@ pub fn print_err_and_line(
         std::ops::Range<usize>,
     ),
     lines: Vec<&str>,
-) -> fmt::Result
-{
+) -> fmt::Result {
     let (title, text, msg, help, file, pos) = data;
     let terminal_width = dimensions().map(|(w, _)| w).unwrap_or(80);
 

@@ -7,8 +7,7 @@ pub fn parse_expression(
     file: String,
     input: String,
     token_iter: &mut Evalex,
-) -> Result<Expr, ParserError>
-{
+) -> Result<Expr, ParserError> {
     /*if let Ok(ref d) = v {
         let e = d.evaluate();
         println!("{e}\n{d}");
@@ -20,8 +19,7 @@ pub fn parse_primary(
     file: String,
     input: String,
     token_iter: &mut Evalex,
-) -> Result<Expr, ParserError>
-{
+) -> Result<Expr, ParserError> {
     let mut last_loc = 0..0;
 
     if let Some((_, loc)) = token_iter.peek() {
@@ -97,8 +95,7 @@ pub fn evaluate_expression(
     file: &String,
     input: String,
     token_iter: &mut Evalex,
-) -> Result<i64, ParserError>
-{
+) -> Result<i64, ParserError> {
     let expr = parse_expression(file.to_string(), input, token_iter)?;
     println!("{}", expr.evaluate());
     println!("{expr}");

@@ -3,15 +3,13 @@ use serde::Serialize;
 use std::fmt;
 
 #[derive(Debug, PartialEq, Serialize, Clone)]
-pub struct MemAddr
-{
+pub struct MemAddr {
     pub indirect: bool,
     pub content: Vec<(TokenKind, std::ops::Range<usize>)>,
 }
 
 #[derive(Debug, PartialEq, Serialize, Clone)]
-pub struct MacroContent
-{
+pub struct MacroContent {
     pub full_data: String,
     pub file: String,
     pub name: (String, std::ops::Range<usize>),
@@ -20,15 +18,13 @@ pub struct MacroContent
 }
 
 #[derive(Debug, PartialEq, Serialize, Clone)]
-pub struct FullArgument
-{
+pub struct FullArgument {
     pub name: String,
     pub arg_type: ArgumentType,
 }
 
 #[derive(Debug, PartialEq, Serialize, Clone)]
-pub enum ArgumentType
-{
+pub enum ArgumentType {
     // for macros
     Mem,
     Imem,
@@ -38,10 +34,8 @@ pub enum ArgumentType
     Label,
 }
 
-impl ArgumentType
-{
-    pub fn from_string(s: &str) -> Option<Self>
-    {
+impl ArgumentType {
+    pub fn from_string(s: &str) -> Option<Self> {
         match s {
             "mem" => Some(ArgumentType::Mem),
             "imem" => Some(ArgumentType::Imem),
@@ -52,8 +46,7 @@ impl ArgumentType
             _ => None,
         }
     }
-    pub fn equals(&self, t: TokenKind) -> bool
-    {
+    pub fn equals(&self, t: TokenKind) -> bool {
         use crate::ArgumentType::*;
         (*self == Mem && t.is_mem())
             || (*self == Reg && t.is_reg())
@@ -62,38 +55,30 @@ impl ArgumentType
     }
 }
 
-impl TokenKind
-{
-    pub fn is_imm(&self) -> bool
-    {
+impl TokenKind {
+    pub fn is_imm(&self) -> bool {
         matches!(self, TokenKind::IntLit(_))
     }
-    pub fn is_mem(&self) -> bool
-    {
+    pub fn is_mem(&self) -> bool {
         matches!(self, TokenKind::Mem(mem_addr) if !mem_addr.indirect)
     }
-    pub fn is_imem(&self) -> bool
-    {
+    pub fn is_imem(&self) -> bool {
         matches!(self, TokenKind::Mem(mem_addr) if mem_addr.indirect)
     }
 
-    pub fn is_reg(&self) -> bool
-    {
+    pub fn is_reg(&self) -> bool {
         matches!(self, TokenKind::Register(_))
     }
-    pub fn is_ireg(&self) -> bool
-    {
+    pub fn is_ireg(&self) -> bool {
         matches!(self, TokenKind::IReg(_))
     }
-    pub fn is_ident(&self) -> bool
-    {
+    pub fn is_ident(&self) -> bool {
         matches!(self, TokenKind::Ident(_))
     }
 }
 
 #[derive(Debug, PartialEq, Serialize, Clone)]
-pub enum InstructionArgument
-{
+pub enum InstructionArgument {
     Mem(MemAddr),
     Reg(u8),
     IReg(u8),
@@ -101,10 +86,8 @@ pub enum InstructionArgument
     Ident(String),
     MacroIdent(String),
 }
-impl InstructionArgument
-{
-    pub fn get_value(&self) -> i64
-    {
+impl InstructionArgument {
+    pub fn get_value(&self) -> i64 {
         use crate::InstructionArgument::*;
         match self {
             Reg(v) => *v as i64,
@@ -128,39 +111,31 @@ impl InstructionArgument
             _ => 0,
         }
     }
-    pub fn is_imm(&self) -> bool
-    {
+    pub fn is_imm(&self) -> bool {
         matches!(self, InstructionArgument::Imm(_))
     }
-    pub fn is_mem(&self) -> bool
-    {
+    pub fn is_mem(&self) -> bool {
         matches!(self, InstructionArgument::Mem(mem_addr) if !mem_addr.indirect)
     }
-    pub fn is_imem(&self) -> bool
-    {
+    pub fn is_imem(&self) -> bool {
         matches!(self, InstructionArgument::Mem(mem_addr) if mem_addr.indirect)
     }
 
-    pub fn is_reg(&self) -> bool
-    {
+    pub fn is_reg(&self) -> bool {
         matches!(self, InstructionArgument::Reg(_))
     }
-    pub fn is_ireg(&self) -> bool
-    {
+    pub fn is_ireg(&self) -> bool {
         matches!(self, InstructionArgument::IReg(_))
     }
-    pub fn is_ident(&self) -> bool
-    {
+    pub fn is_ident(&self) -> bool {
         matches!(
             self,
             InstructionArgument::Ident(_) | InstructionArgument::MacroIdent(_)
         )
     }
 }
-impl TokenKind
-{
-    pub fn to_tok_kind(&self) -> InstructionArgument
-    {
+impl TokenKind {
+    pub fn to_tok_kind(&self) -> InstructionArgument {
         use crate::TokenKind::*;
         match self {
             Mem(v) => InstructionArgument::Mem(v.clone()),
@@ -172,8 +147,7 @@ impl TokenKind
             _ => panic!(":3"),
         }
     }
-    pub fn get_value(&self) -> i64
-    {
+    pub fn get_value(&self) -> i64 {
         match self {
             TokenKind::IntLit(v) => *v,
             _ => 0,
@@ -181,10 +155,8 @@ impl TokenKind
     }
 }
 
-impl InstructionArgument
-{
-    pub fn to_tok_kind(&self) -> TokenKind
-    {
+impl InstructionArgument {
+    pub fn to_tok_kind(&self) -> TokenKind {
         use crate::InstructionArgument::*;
         match self {
             Mem(v) => TokenKind::Mem(v.clone()),
@@ -198,17 +170,14 @@ impl InstructionArgument
 }
 
 #[derive(Debug, PartialEq, Serialize, Clone)]
-pub struct InstructionData
-{
+pub struct InstructionData {
     pub expanded: bool,
     pub name: String,
     pub args: Vec<(InstructionArgument, std::ops::Range<usize>)>,
 }
 
-impl fmt::Display for MemAddr
-{
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result
-    {
+impl fmt::Display for MemAddr {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         writeln!(f, "├── Indirect: {}", self.indirect)?;
         for (i, (arg, _)) in self.content.iter().enumerate() {
             if i != self.content.len() - 1 {
@@ -221,10 +190,8 @@ impl fmt::Display for MemAddr
     }
 }
 
-impl fmt::Display for MacroContent
-{
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result
-    {
+impl fmt::Display for MacroContent {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         writeln!(f, "Macro: {}", self.name.0)?;
         writeln!(f, "├── Args:")?;
         for (i, (_, arg, _)) in self.args.iter().enumerate() {
@@ -246,18 +213,14 @@ impl fmt::Display for MacroContent
     }
 }
 
-impl fmt::Display for FullArgument
-{
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result
-    {
+impl fmt::Display for FullArgument {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}: {}", self.name, self.arg_type)
     }
 }
 
-impl fmt::Display for ArgumentType
-{
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result
-    {
+impl fmt::Display for ArgumentType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             ArgumentType::Mem => write!(f, "memory direct"),
             ArgumentType::Imem => write!(f, "memory indirect"),
@@ -268,10 +231,8 @@ impl fmt::Display for ArgumentType
         }
     }
 }
-impl InstructionArgument
-{
-    pub fn get_raw(&self) -> String
-    {
+impl InstructionArgument {
+    pub fn get_raw(&self) -> String {
         match self {
             InstructionArgument::Mem(_) => String::from("memory direct"),
             InstructionArgument::Reg(_) => String::from("register"),
@@ -282,10 +243,8 @@ impl InstructionArgument
         }
     }
 }
-impl fmt::Display for InstructionArgument
-{
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result
-    {
+impl fmt::Display for InstructionArgument {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             InstructionArgument::Mem(token) => write!(f, "Mem\n    {}", token),
             InstructionArgument::Reg(reg) => write!(f, "Reg({})", reg),
@@ -297,10 +256,8 @@ impl fmt::Display for InstructionArgument
     }
 }
 
-impl fmt::Display for InstructionData
-{
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result
-    {
+impl fmt::Display for InstructionData {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         writeln!(
             f,
             "Instruction: {}, Expanded from macro {}",

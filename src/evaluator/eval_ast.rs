@@ -1,7 +1,6 @@
 use std::fmt;
 #[derive(Debug)]
-pub enum Expr
-{
+pub enum Expr {
     Int(i64),
     Add(Box<Expr>, Box<Expr>),
     Sub(Box<Expr>, Box<Expr>),
@@ -13,10 +12,8 @@ pub enum Expr
     Xor(Box<Expr>, Box<Expr>),
 }
 
-impl Expr
-{
-    pub fn evaluate(&self) -> i64
-    {
+impl Expr {
+    pub fn evaluate(&self) -> i64 {
         match self {
             Expr::Int(n) => *n,
             Expr::Add(lhs, rhs) => lhs.evaluate() + rhs.evaluate(),
@@ -30,17 +27,14 @@ impl Expr
         }
     }
 }
-impl fmt::Display for Expr
-{
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result
-    {
+impl fmt::Display for Expr {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fn format_expr(
             expr: &Expr,
             prefix: &str,
             is_tail: bool,
             f: &mut fmt::Formatter<'_>,
-        ) -> fmt::Result
-        {
+        ) -> fmt::Result {
             let (new_prefix, current_prefix) = if is_tail {
                 (format!("{}    ", prefix), format!("{}└── ", prefix))
             } else {

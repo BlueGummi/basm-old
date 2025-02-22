@@ -3,8 +3,7 @@ use logos::Logos;
 use serde::Serialize;
 
 #[derive(Logos, Debug, Clone, PartialEq, Serialize)]
-pub enum TokenKind
-{
+pub enum TokenKind {
     #[regex(r#"@include\s+"([^"]+)""#, |lex| lex.slice()[8..].trim_start()[1..lex.slice()[8..].trim_start().len() - 1].to_string())]
     IncludeFile(String),
 
@@ -155,8 +154,7 @@ pub enum TokenKind
     Imm(i64),
     Expr(i64),
 }
-fn parse_content(content: &str) -> i64
-{
+fn parse_content(content: &str) -> i64 {
     if content.starts_with("0x") || content.starts_with("0X") {
         i64::from_str_radix(&content[2..], 16).unwrap()
     } else if content.starts_with("0b") || content.starts_with("0B") {
@@ -170,11 +168,9 @@ fn parse_content(content: &str) -> i64
     }
 }
 
-impl TokenKind
-{
+impl TokenKind {
     // (M)acro (I)dentifier
-    pub fn get_mi_raw(&self) -> Option<String>
-    {
+    pub fn get_mi_raw(&self) -> Option<String> {
         if let TokenKind::MacroIdent(d) = self {
             Some(d.to_string())
         } else {
@@ -182,8 +178,7 @@ impl TokenKind
         }
     }
 }
-fn parse_char(s: &str) -> char
-{
+fn parse_char(s: &str) -> char {
     let inner = &s[1..s.len() - 1];
     match inner {
         "\\n" => '\n',
@@ -197,8 +192,7 @@ fn parse_char(s: &str) -> char
         _ => panic!("Invalid character escape sequence: {}", s),
     }
 }
-fn parse_string(s: &str) -> String
-{
+fn parse_string(s: &str) -> String {
     let inner = &s[1..s.len() - 1];
     let mut result = String::new();
     let mut chars = inner.chars().peekable();

@@ -1,10 +1,8 @@
 use crate::*;
 use std::fmt;
 
-impl fmt::Display for TokenKind
-{
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
-    {
+impl fmt::Display for TokenKind {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             TokenKind::IncludeFile(name) => write!(f, "include file \"{name}\""),
             TokenKind::Newline => write!(f, "newline"),
