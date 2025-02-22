@@ -94,23 +94,30 @@ pub fn print_err_and_line(
             let error_start = pos.start.saturating_sub(line_start);
             let error_end = (pos.end).min(line_end) - line_start;
             let start_spaces = " ".repeat(indents);
-
+            let msg_vec: Vec<String> = msg.lines().map(|l| l.to_string()).collect();
+            let mut msg = String::from("");
+            for (index, line) in msg_vec.iter().enumerate() {
+                if index == 0 {
+                    msg = format!("{line}");
+                } else {
+                    msg = format!(
+                        "{msg}\n{}{}{line}",
+                        "│".bright_red(),
+                        " ".repeat(title.len() + 1)
+                    );
+                }
+            }
             if title == "error" {
                 writeln!(
                     f,
                     "{start_spaces}{}: {}",
                     title.bright_red().underline(),
-                    msg.bold()
+                    msg
                 )?;
             } else if title.is_empty() {
                 writeln!(f, "{}", msg.bold())?;
             } else {
-                writeln!(
-                    f,
-                    "{start_spaces}{}: {}",
-                    title.yellow().underline(),
-                    msg.bold()
-                )?;
+                writeln!(f, "{start_spaces}{}: {}", title.yellow().underline(), msg)?;
             }
 
             let left_char = if help.is_some() { "├" } else { "╰" };

@@ -126,6 +126,16 @@ impl MacroContent {
                     name: contents.name.to_string(),
                     args: ins_args,
                 };
+                if let Err(e) = reconstruct.is_valid() {
+                    errs.push(MacroValidatorError {
+                        err_input: self.full_data.to_string(),
+                        err_message: e,
+                        help: None,
+                        orig_input: orig_data.to_string(),
+                        orig_pos: span.clone(),
+                        mac: self.clone(),
+                    });
+                }
                 new_elems.push((TokenKind::Instruction(reconstruct), span.clone()));
                 continue;
             }

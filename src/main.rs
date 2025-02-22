@@ -5,11 +5,12 @@ fn main() {
 
 label: macro_rules! silly ( arg1: reg, arg2: imm, arg3: reg, arg4: mem) { 
     mov %arg1, %arg2
-    lea %arg3, %arg4
+    lea %arg2, %arg4
 }
-
-    silly!(r3, r6, 3, r2, [0xff])
-
+    const memloc = 0xff
+    lea r0, [(memloc + 3)]
+    silly!(r3, 3, r2, [0xff])
+add r0, (((( ( 6 * 3 ) + (3 + 3) * 5) & ( 6 * 3 ) + (3 + 3) * 5) * 2 + (3 * 4 + 2) & 33) + (( ( 6 * 3 ) + (3 + 3) * 5) & ( 6 * 3 ) + (3 + 3) * 5) * 2 + (3 * 4 + 2) & 33))
 "#;
     let input_string_2 = r#"
 const v = (4 * 3)

@@ -25,6 +25,7 @@ pub struct FullArgument {
 
 #[derive(Debug, PartialEq, Serialize, Clone)]
 pub enum ArgumentType {
+    // for macros
     Mem,
     Imem,
     Ireg,
@@ -85,7 +86,30 @@ pub enum InstructionArgument {
     Ident(String),
     MacroIdent(String),
 }
+impl InstructionArgument {
+    pub fn is_imm(&self) -> bool {
+        matches!(self, InstructionArgument::Imm(_))
+    }
+    pub fn is_mem(&self) -> bool {
+        matches!(self, InstructionArgument::Mem(mem_addr) if !mem_addr.indirect)
+    }
+    pub fn is_imem(&self) -> bool {
+        matches!(self, InstructionArgument::Mem(mem_addr) if mem_addr.indirect)
+    }
 
+    pub fn is_reg(&self) -> bool {
+        matches!(self, InstructionArgument::Reg(_))
+    }
+    pub fn is_ireg(&self) -> bool {
+        matches!(self, InstructionArgument::IReg(_))
+    }
+    pub fn is_ident(&self) -> bool {
+        matches!(
+            self,
+            InstructionArgument::Ident(_) | InstructionArgument::MacroIdent(_)
+        )
+    }
+}
 impl TokenKind {
     pub fn to_tok_kind(&self) -> InstructionArgument {
         use crate::TokenKind::*;
@@ -176,7 +200,18 @@ impl fmt::Display for ArgumentType {
         }
     }
 }
-
+impl InstructionArgument {
+    pub fn get_raw(&self) -> String {
+        match self {
+            InstructionArgument::Mem(token) => String::from("memory direct"),
+            InstructionArgument::Reg(reg) => String::from("register"),
+            InstructionArgument::IReg(reg) => String::from("register indirect"),
+            InstructionArgument::Imm(imm) => String::from("immediate"),
+            InstructionArgument::Ident(ident) => String::from("identifier"),
+            InstructionArgument::MacroIdent(ident) => String::from("macro identifier"),
+        }
+    }
+}
 impl fmt::Display for InstructionArgument {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
