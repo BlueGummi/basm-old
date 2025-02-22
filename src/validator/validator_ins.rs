@@ -130,7 +130,7 @@ impl InstructionData {
         if valid_args && ok_val {
             return Ok(());
         }
-        let ovfm = if !ok_val {
+        let ovfm = if !ok_val && valid_args {
             format!(
                 "{}: max LHS for {} is {}, max RHS is {}\n{}: found LHS and RHS values are {} and {}\n ",
                 "value too large".bold(),
@@ -142,7 +142,7 @@ impl InstructionData {
         };
         if !valid_args {
             Err(format!(
-                "{}: {} requires {} LHS and {} RHS\n{}: found {} LHS and {} RHS\n\n{ovfm}",
+                "{}: {} requires {} LHS and\n{} RHS\n{}: found {} LHS and {} RHS\n\n{ovfm}",
                 "invalid instruction".bold(),
                 self.name.to_uppercase().magenta(),
                 LHS_DETAIL[ins_class].cyan(),
