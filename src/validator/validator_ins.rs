@@ -1,7 +1,9 @@
 use crate::*;
 use colored::*;
-impl InstructionData {
-    pub fn is_valid(&self) -> Result<(), String> {
+impl InstructionData
+{
+    pub fn is_valid(&self) -> Result<(), String>
+    {
         // Ident is for matching labels - they will be memory addresses
         // Boolean lambda bonanza begins
         let lhs_val = match self.args.first() {

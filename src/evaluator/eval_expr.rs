@@ -7,7 +7,8 @@ pub fn parse_bitwise(
     file: String,
     input: String,
     token_iter: &mut Evalex,
-) -> Result<Expr, ParserError> {
+) -> Result<Expr, ParserError>
+{
     let mut expr = parse_add_sub(file.to_string(), input.to_string(), token_iter)?;
 
     while let Some((token, _)) = token_iter.peek() {
@@ -55,7 +56,8 @@ pub fn parse_add_sub(
     file: String,
     input: String,
     token_iter: &mut Evalex,
-) -> Result<Expr, ParserError> {
+) -> Result<Expr, ParserError>
+{
     let mut expr = parse_mul_shift(file.to_string(), input.to_string(), token_iter)?;
 
     while let Some((token, _)) = token_iter.peek() {
@@ -92,7 +94,8 @@ pub fn parse_mul_shift(
     file: String,
     input: String,
     token_iter: &mut Evalex,
-) -> Result<Expr, ParserError> {
+) -> Result<Expr, ParserError>
+{
     let mut expr = parse_primary(file.to_string(), input.to_string(), token_iter)?;
 
     while let Some((token, _)) = token_iter.peek() {

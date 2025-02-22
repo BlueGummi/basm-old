@@ -1,10 +1,12 @@
 use crate::*;
 
-impl Parser<'_> {
+impl Parser<'_>
+{
     fn parse_single_macro_argument(
         &mut self,
         arg_name: String,
-    ) -> Vec<(String, FullArgument, std::ops::Range<usize>)> {
+    ) -> Vec<(String, FullArgument, std::ops::Range<usize>)>
+    {
         let input_str = self.input.to_string();
         let (val, loc) = match self.lexer.next() {
             Some((v, l)) => (v, l),
@@ -56,7 +58,8 @@ impl Parser<'_> {
     fn parse_macro_arguments(
         &mut self,
         name: (String, std::ops::Range<usize>),
-    ) -> Vec<(String, TokenKind, std::ops::Range<usize>)> {
+    ) -> Vec<(String, TokenKind, std::ops::Range<usize>)>
+    {
         let input_str = self.input.to_string();
         let mut tokens = Vec::new();
         let mut args = Vec::new();
@@ -155,7 +158,8 @@ impl Parser<'_> {
         tokens
     }
 
-    pub fn parse_single_macro(&mut self) -> Vec<(String, TokenKind, std::ops::Range<usize>)> {
+    pub fn parse_single_macro(&mut self) -> Vec<(String, TokenKind, std::ops::Range<usize>)>
+    {
         let input_str = self.input.to_string();
         let mut tokens = Vec::new();
         let (val, loc) = match self.lexer.next() {

@@ -6,15 +6,18 @@ use std::vec::IntoIter;
 type ParsingLexer = Peekable<IntoIter<(Result<TokenKind, ()>, std::ops::Range<usize>)>>;
 type ParserResult<'a> =
     Result<Vec<(String, TokenKind, std::ops::Range<usize>)>, &'a Vec<ParserError>>;
-pub struct Parser<'a> {
+pub struct Parser<'a>
+{
     pub file: String,
     pub lexer: ParsingLexer,
     pub input: &'a str,
     pub errors: Vec<ParserError>,
 }
 
-impl<'a> Parser<'a> {
-    pub fn new(file: String, input: &'a str) -> Result<Self, Vec<ParserError>> {
+impl<'a> Parser<'a>
+{
+    pub fn new(file: String, input: &'a str) -> Result<Self, Vec<ParserError>>
+    {
         let errors = Vec::new();
         let lexer = TokenKind::lexer(input).spanned();
 
@@ -39,7 +42,8 @@ impl<'a> Parser<'a> {
             errors,
         })
     }
-    pub fn parse(&mut self) -> ParserResult {
+    pub fn parse(&mut self) -> ParserResult
+    {
         let mut tokens = Vec::new();
 
         while let Some((token, span)) = self.lexer.next() {

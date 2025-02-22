@@ -3,7 +3,8 @@ use colored::*;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::Read;
-fn main() {
+fn main()
+{
     let input_string = r#"
     @include "my.asm"
 label: macro_rules! silly ( arg1: reg, arg2: imm, arg3: reg, arg4: mem) { 
