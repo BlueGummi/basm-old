@@ -78,10 +78,10 @@ add r0, (((( ( 6 * 3 ) + (3 + 3) * 5) & ( 6 * 3 ) + (3 + 3) * 5) * 2 + (3 * 4 + 
                             help: None,
                             input: input_string.to_string(),
                             message: format!(
-                                "{}: with name `{}`: {}",
+                                "{}: with name `{}`\n{}\n ",
                                 "cannot open file".bold(),
                                 new_file.bold(),
-                                e.to_string().bold()
+                                e.to_string().magenta()
                             ),
                             start_pos: loc.start,
                             last_pos: loc.end,
