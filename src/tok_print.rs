@@ -4,6 +4,7 @@ use std::fmt;
 impl fmt::Display for TokenKind {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
+            TokenKind::IncludeFile(name) => write!(f, "include file \"{name}\""),
             TokenKind::Newline => write!(f, "newline"),
             TokenKind::Whitespace => write!(f, "whitespace"),
             TokenKind::Tab => write!(f, "tab"),

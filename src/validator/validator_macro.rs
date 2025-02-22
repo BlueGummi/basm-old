@@ -42,7 +42,7 @@ impl MacroContent {
             }
         }
         let mut current_args = Vec::new();
-        for (arg, e) in &self.args {
+        for (_, arg, e) in &self.args {
             current_args.push((arg.arg_type.clone(), e));
         }
         let f = if let Some((_, s)) = parsed_toks.first() {
@@ -64,7 +64,7 @@ impl MacroContent {
                 mac: self.clone(),
             });
         }
-        for (index, (arg, span)) in self.args.iter().enumerate() {
+        for (index, (_, arg, span)) in self.args.iter().enumerate() {
             if let Some((d, span)) = parsed_toks.get(index) {
                 if *d == arg.arg_type {
                     continue;
@@ -96,7 +96,7 @@ impl MacroContent {
         for element in argument_indices {
             // we no longer need to keep track of argument locations
             if let Some((v, _)) = toks.get(element) {
-                if let Some((l, _)) = self.args.get(count) {
+                if let Some((_, l, _)) = self.args.get(count) {
                     arg_map.insert(&l.name, v);
                     count += 1;
                 }

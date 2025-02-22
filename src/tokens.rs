@@ -4,6 +4,9 @@ use serde::Serialize;
 
 #[derive(Logos, Debug, Clone, PartialEq, Serialize)]
 pub enum TokenKind {
+    #[regex(r#"@include\s+"([^"]+)""#, |lex| lex.slice()[8..].trim_start()[1..lex.slice()[8..].trim_start().len() - 1].to_string())]
+    IncludeFile(String),
+
     #[token("\n")]
     Newline,
 

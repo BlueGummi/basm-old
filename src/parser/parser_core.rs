@@ -38,7 +38,9 @@ impl<'a> Parser<'a> {
             errors,
         })
     }
-    pub fn parse(&mut self) -> Result<Vec<(TokenKind, std::ops::Range<usize>)>, &Vec<ParserError>> {
+    pub fn parse(
+        &mut self,
+    ) -> Result<Vec<(String, TokenKind, std::ops::Range<usize>)>, &Vec<ParserError>> {
         let mut tokens = Vec::new();
 
         while let Some((token, span)) = self.lexer.next() {
@@ -46,7 +48,7 @@ impl<'a> Parser<'a> {
                 Ok(TokenKind::Whitespace) | Ok(TokenKind::Tab) => {}
                 Ok(TokenKind::MacroDef(_)) => tokens.extend(self.parse_single_macro()),
                 Ok(t) => {
-                    tokens.push((t, span));
+                    tokens.push((self.file.to_string(), t, span));
                 }
                 Err(()) => {
                     self.errors.push(ParserError {
