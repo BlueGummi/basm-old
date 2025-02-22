@@ -4,11 +4,11 @@ fn main() {
     let input_string = r#"
 
 label: macro_rules! silly ( arg1: reg, arg2: imm, arg3: reg, arg4: mem) { 
-    mov %arg2, %arg2
+    mov %arg1, %arg2
     lea %arg3, %arg4
 }
 
-    silly!(r6, 3, r2, [0xff])
+    silly!(r3, r6, 3, r2, [0xff])
 
 "#;
     let input_string_2 = r#"
@@ -51,10 +51,13 @@ const v = (4 * 3)
     };
     use crate::TokenKind::*;
     let mut mac_locs = Vec::new();
-    for (index, (element, span)) in toks.iter().enumerate() {
+    for (index, (element, _)) in toks.iter().enumerate() {
         if let Macro(data) = element {
             let mut mac_map = MACRO_MAP.lock().unwrap();
-            mac_map.insert(data.name.to_string(), (data.file.to_string(), data.clone()));
+            mac_map.insert(
+                data.name.0.to_string(),
+                (data.file.to_string(), data.clone()),
+            );
             mac_locs.push(index);
         }
     }
@@ -65,11 +68,11 @@ const v = (4 * 3)
     let mut in_call = false;
     let mut curr_mac = None;
     let mac_map = MACRO_MAP.lock().unwrap();
-    for (index, (element, span)) in toks.iter().enumerate() {
+    for (element, span) in toks {
         if let MacroCall(call) = element {
             in_call = true;
             mac_call_data = Vec::new();
-            if let Some(v) = mac_map.get(call) {
+            if let Some(v) = mac_map.get(&call) {
                 curr_mac = Some(v);
             } else {
                 println!("uwu :3 i cannot find this macro with name {call}");
@@ -79,10 +82,19 @@ const v = (4 * 3)
         }
         if let RightParen = element {
             in_call = false;
-            if let Some((v, m)) = curr_mac {
+            if let Some((_, m)) = curr_mac {
                 match m.is_valid(input_string.to_string(), mac_call_data.clone()) {
-                    Ok(v) => println!("expanded toks: {v:?}"),
-                    Err(e) => println!("{e}"),
+                    Ok(v) => {
+                        println!("expanded toks:");
+                        for (tok, _) in v {
+                            println!("{tok}");
+                        }
+                    }
+                    Err(e) => {
+                        for e in e {
+                            println!("{e}");
+                        }
+                    }
                 }
             }
             continue;

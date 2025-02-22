@@ -12,7 +12,7 @@ pub struct MemAddr {
 pub struct MacroContent {
     pub full_data: String,
     pub file: String,
-    pub name: String,
+    pub name: (String, std::ops::Range<usize>),
     pub args: Vec<(FullArgument, std::ops::Range<usize>)>,
     pub tokens: Vec<(TokenKind, std::ops::Range<usize>)>,
 }
@@ -137,7 +137,7 @@ impl fmt::Display for MemAddr {
 
 impl fmt::Display for MacroContent {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        writeln!(f, "Macro: {}", self.name)?;
+        writeln!(f, "Macro: {}", self.name.0)?;
         writeln!(f, "├── Args:")?;
         for (i, (arg, _)) in self.args.iter().enumerate() {
             if i != self.args.len() - 1 {

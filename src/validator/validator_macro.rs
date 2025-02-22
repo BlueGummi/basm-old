@@ -5,12 +5,13 @@ impl MacroContent {
         &self,
         orig_data: String,
         toks: Vec<(TokenKind, std::ops::Range<usize>)>, // incoming macro args
-    ) -> Result<Vec<(TokenKind, std::ops::Range<usize>)>, MacroValidatorError> {
+    ) -> Result<Vec<(TokenKind, std::ops::Range<usize>)>, Vec<MacroValidatorError>> {
         // okay... here, I need to check first if the token types of the input
         // match the tokens inside of the macro.
         // what I can do, is I can iterate through the input tokens, and iterate through the arguments
         let mut parsed_toks = Vec::new();
         let mut argument_indices = Vec::new();
+        let mut errs = Vec::new();
         for (index, (token, span)) in toks.iter().enumerate() {
             // this loop will clean up the toks and parse it into types
             let data = match token {
@@ -22,15 +23,15 @@ impl MacroContent {
                 token if token.is_ident() => Some(ArgumentType::Label),
                 TokenKind::Comma => None,
                 _ => {
-                    panic!(); /*
-                              return Err(MacroValidatorError {
-                                  err_input: self.full_data.to_string(),
-                                  err_message: format!("a {token} is not a valid macro argument"),
-                                  help: None,
-                                  orig_input: orig_data.to_string(),
-                                  orig_pos: span,
-                                  mac: self,
-                              })*/
+                    errs.push(MacroValidatorError {
+                        err_input: self.full_data.to_string(),
+                        err_message: format!("a {token} is not a valid macro argument"),
+                        help: None,
+                        orig_input: orig_data.to_string(),
+                        orig_pos: span.clone(),
+                        mac: self.clone(),
+                    });
+                    break;
                 }
             };
             if let Some(v) = data {
@@ -42,31 +43,50 @@ impl MacroContent {
         for (arg, e) in &self.args {
             current_args.push((arg.arg_type.clone(), e));
         }
+        let f = if let Some((_, s)) = parsed_toks.first() {
+            s
+        } else {
+            &&(0..0)
+        };
+        if parsed_toks.len() != self.args.len() {
+            errs.push(MacroValidatorError {
+                err_input: self.full_data.to_string(),
+                err_message: format!(
+                    "expected {} arguments, found {}",
+                    self.args.len(),
+                    parsed_toks.len()
+                ),
+                help: None,
+                orig_input: orig_data.to_string(),
+                orig_pos: f.clone().clone(),
+                mac: self.clone(),
+            });
+        }
         for (index, (arg, span)) in self.args.iter().enumerate() {
             if let Some((d, span)) = parsed_toks.get(index) {
                 if *d == arg.arg_type {
                     continue;
                 } else {
-                    panic!("found wrong thing"); /*
-                              return Err(MacroValidatorError {
-                                  err_input: self.full_data.to_string(),
-                                  err_message: format!("expected {}, found {d}", arg.arg_type),
-                                  help: None,
-                                  orig_input: orig_data.to_string(),
-                                  orig_pos: &span,
-                                  mac: self,
-                              }); */
+                    errs.push(MacroValidatorError {
+                        err_input: self.full_data.to_string(),
+                        err_message: format!("expected {}, found {d}", arg.arg_type),
+                        help: None,
+                        orig_input: orig_data.to_string(),
+                        orig_pos: span.clone().clone(),
+                        mac: self.clone(),
+                    });
+                    break;
                 }
             } else {
-                panic!("not enough args");
-                /*return Err(MacroValidatorError {
+                errs.push(MacroValidatorError {
                     err_input: self.full_data.to_string(),
                     err_message: String::from("an incorrect number of arguments were supplied"),
                     help: None, // borrow checker is yappin
                     orig_input: orig_data.to_string(),
-                    orig_pos: span,
-                    mac: self,
-                });*/
+                    orig_pos: span.clone(),
+                    mac: self.clone(),
+                });
+                break;
             }
         } // we need a hashmap of type ident names, TokenKind to record arguments
         let mut arg_map: HashMap<&String, &crate::TokenKind> = HashMap::new();
@@ -94,7 +114,7 @@ impl MacroContent {
                 for (thing, place) in &contents.args {
                     if let InstructionArgument::MacroIdent(name) = thing {
                         if let Some(v) = arg_map.get(&name) {
-                            ins_args.push((v.clone().to_tok_kind(), span.clone()));
+                            ins_args.push((v.to_tok_kind(), span.clone()));
                             continue;
                         } else {
                             panic!("this is not a macro arg: {name}");
@@ -110,6 +130,9 @@ impl MacroContent {
                 continue;
             }
             new_elems.push((element.clone(), span.clone()));
+        }
+        if !errs.is_empty() {
+            return Err(errs);
         }
         Ok(new_elems)
     }

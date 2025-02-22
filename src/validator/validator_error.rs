@@ -4,22 +4,24 @@ use std::fmt;
 use term_size::dimensions;
 
 #[derive(Debug, Clone)]
-pub struct MacroValidatorError<'a> {
+pub struct MacroValidatorError {
     pub err_input: String,
     pub err_message: String,
     pub help: Option<String>,
     pub orig_input: String,
-    pub orig_pos: &'a std::ops::Range<usize>, // macro call
-    pub mac: &'a MacroContent,
+    pub orig_pos: std::ops::Range<usize>, // macro call spot
+    pub mac: MacroContent,
 }
 
-impl fmt::Display for MacroValidatorError<'_> {
+impl fmt::Display for MacroValidatorError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let m_pos = if let Some((_, v)) = self.mac.args.first() {
-            v.clone()
+        let s_pos = self.mac.name.1.start;
+        let e_pos = if let Some((_, v)) = self.mac.args.last() {
+            v.end
         } else {
-            0..0
+            0
         };
+        let m_pos = s_pos..e_pos;
         if self.orig_pos.start >= self.orig_input.len()
             || self.orig_pos.end > self.orig_input.len()
             || self.orig_pos.start >= self.orig_pos.end
@@ -52,7 +54,7 @@ impl fmt::Display for MacroValidatorError<'_> {
             (
                 "",
                 self.err_input.to_string(),
-                format!(" in expansion of macro `{}`", self.mac.name),
+                format!(" in expansion of macro `{}`", self.mac.name.0),
                 &self.help,
                 self.mac.file.to_string(),
                 m_pos,
