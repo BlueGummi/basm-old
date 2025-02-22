@@ -1,8 +1,7 @@
-use crate::eval::evaluate_expression;
 use crate::*;
 
 type PassResult = Result<Vec<(Result<TokenKind, ()>, std::ops::Range<usize>)>, Vec<ParserError>>;
-impl<'a> Parser<'a> {
+impl Parser<'_> {
     pub fn second_pass(
         &mut self,
         tokens: Vec<(Result<TokenKind, ()>, std::ops::Range<usize>)>,

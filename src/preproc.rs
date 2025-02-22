@@ -12,6 +12,7 @@ pub fn process_includes(
         let mut has_include = false;
 
         use crate::TokenKind::*;
+        #[allow(clippy::explicit_counter_loop)]
         for (fname, element, loc) in toks.iter() {
             if let IncludeFile(new_file) = element {
                 has_include = true;

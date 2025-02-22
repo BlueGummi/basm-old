@@ -1,4 +1,3 @@
-use crate::eval::evaluate_expression;
 use crate::*;
 
 type PassResult = Result<Vec<(Result<TokenKind, ()>, std::ops::Range<usize>)>, Vec<ParserError>>;

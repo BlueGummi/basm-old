@@ -14,10 +14,9 @@ pub struct Args {
     #[clap(short = 'o', long)]
     pub binary: Option<String>,
 
-    /// Source code
+    //    /// Source code
     //    #[clap(required = true)]
     //    pub source: String,
-
     /// Verbose output
     #[clap(short = 'v', long, default_value_t = false)]
     pub verbose: bool,

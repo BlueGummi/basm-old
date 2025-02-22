@@ -1,5 +1,4 @@
 use crate::*;
-use logos::Logos;
 use std::iter::Peekable;
 type Evalex<'a> = Peekable<logos::SpannedIter<'a, tokens::TokenKind>>;
 
