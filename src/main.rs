@@ -13,7 +13,6 @@ label: macro_rules! silly ( arg1: reg, arg2: imm, arg3: reg, arg4: mem) {
 }
     const memloc = 0xff
     lea r0, [(memloc + 3)]
-    illy!(r3, 3, r2, [0xffff])
 add r0, (((( ( 6 * 3 ) + (3 + 3) * 5) & ( 6 * 3 ) + (3 + 3) * 5) * 2 + (3 * 4 + 2) & 33) + (( ( 6 * 3 ) + (3 + 3) * 5) & ( 6 * 3 ) + (3 + 3) * 5) * 2 + (3 * 4 + 2) & 33))
 "#;
     println!("{input_string}");
@@ -50,23 +49,28 @@ add r0, (((( ( 6 * 3 ) + (3 + 3) * 5) & ( 6 * 3 ) + (3 + 3) * 5) * 2 + (3 * 4 + 
     };
 
     use crate::TokenKind::*;
-
+    // include checking
     'inc_check: loop {
         let mut included_toks = Vec::new();
         let mut index = 0;
         #[allow(clippy::explicit_counter_loop)]
         for (fname, element, loc) in &toks {
-            let mut input_string = String::new();
-            File::open(fname)
-                .unwrap()
-                .read_to_string(&mut input_string)
-                .unwrap();
             if let IncludeFile(new_file) = element {
                 if *new_file == *fname {
+                    let mut f_string = String::new();
+
+                    match File::open(fname) {
+                        Ok(mut e) => match e.read_to_string(&mut f_string) {
+                            Ok(_) => (),
+                            Err(_) => f_string = input_string.to_string(),
+                        },
+                        Err(_) => f_string = input_string.to_string(),
+                    }
+
                     let problem = ParserError {
                         file: fname.to_string(),
                         help: None,
-                        input: input_string.to_string(),
+                        input: f_string.to_string(),
                         message: "cannot include macro file itself".to_string(),
                         start_pos: loc.start,
                         last_pos: loc.end,
@@ -78,10 +82,19 @@ add r0, (((( ( 6 * 3 ) + (3 + 3) * 5) & ( 6 * 3 ) + (3 + 3) * 5) * 2 + (3 * 4 + 
                 let mut file_data = match File::open(new_file) {
                     Ok(v) => v,
                     Err(e) => {
+                        let mut f_string = String::new();
+
+                        match File::open(fname) {
+                            Ok(mut e) => match e.read_to_string(&mut f_string) {
+                                Ok(_) => (),
+                                Err(_) => f_string = input_string.to_string(),
+                            },
+                            Err(_) => f_string = input_string.to_string(),
+                        }
                         let problem = ParserError {
                             file: fname.to_string(),
                             help: None,
-                            input: input_string.to_string(),
+                            input: f_string.to_string(),
                             message: format!(
                                 "{}: with name `{}`\n{}\n ",
                                 "cannot open file".bold(),
@@ -100,10 +113,19 @@ add r0, (((( ( 6 * 3 ) + (3 + 3) * 5) & ( 6 * 3 ) + (3 + 3) * 5) * 2 + (3 * 4 + 
                 match file_data.read_to_string(&mut contents) {
                     Ok(_) => (),
                     Err(e) => {
+                        let mut f_string = String::new();
+
+                        match File::open(fname) {
+                            Ok(mut e) => match e.read_to_string(&mut f_string) {
+                                Ok(_) => (),
+                                Err(_) => f_string = input_string.to_string(),
+                            },
+                            Err(_) => f_string = input_string.to_string(),
+                        }
                         let problem = ParserError {
                             file: fname.to_string(),
                             help: None,
-                            input: input_string.to_string(),
+                            input: f_string.to_string(),
                             message: format!(
                                 "{}: with name `{}`: {}",
                                 "cannot open file".bold(),
@@ -194,6 +216,7 @@ add r0, (((( ( 6 * 3 ) + (3 + 3) * 5) & ( 6 * 3 ) + (3 + 3) * 5) * 2 + (3 * 4 + 
     for (fname, element, span) in &toks {
         counter += 1;
         if let MacroCall(call) = element {
+            // we can perform instruction validation here
             in_call = true;
             mac_call_data = Vec::new();
             if let Some(v) = mac_map.get(call) {
