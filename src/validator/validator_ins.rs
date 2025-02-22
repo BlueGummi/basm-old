@@ -138,7 +138,7 @@ impl InstructionData {
                 LHS_MAXES[ins_class].cyan(), RHS_MAXES[ins_class].cyan(), "note".yellow(), lhs_val.blue(), rhs_val.blue()
             )
         } else {
-            String::from(" ")
+            String::from("")
         };
         if !valid_args {
             Err(format!(
