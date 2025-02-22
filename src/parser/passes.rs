@@ -1,12 +1,14 @@
 use crate::eval::evaluate_expression;
 use crate::*;
-type PassOne = Result<Vec<(Result<TokenKind, ()>, std::ops::Range<usize>)>, Vec<ParserError>>;
+use colored::*;
+
+type PassResult = Result<Vec<(Result<TokenKind, ()>, std::ops::Range<usize>)>, Vec<ParserError>>;
 impl<'a> Parser<'a> {
     pub fn first_pass(
         file: String,
         input: String,
         lexer: logos::SpannedIter<'a, TokenKind>,
-    ) -> PassOne {
+    ) -> PassResult {
         let mut tokens = Vec::new();
         let mut lexer = lexer.peekable();
         let mut errors = Vec::new();
@@ -194,9 +196,10 @@ impl<'a> Parser<'a> {
     pub fn second_pass(
         &mut self,
         tokens: Vec<(Result<TokenKind, ()>, std::ops::Range<usize>)>,
-    ) -> Vec<(Result<TokenKind, ()>, std::ops::Range<usize>)> {
+    ) -> PassResult {
         let mut new_tokens = Vec::new();
         let mut token_iter = tokens.into_iter().peekable();
+        let mut errors = Vec::new();
         while let Some((token, span)) = token_iter.next() {
             match token {
                 Ok(TokenKind::MacroCall(m)) => {
@@ -265,6 +268,21 @@ impl<'a> Parser<'a> {
                                 }
                             }
                         }
+                        let ins = InstructionData {
+                            expanded: false,
+                            name: name.to_string(),
+                            args: args.clone(),
+                        };
+                        if let Err(f) = ins.is_valid() {
+                            errors.push(ParserError {
+                                file: self.file.to_string(),
+                                help: None,
+                                input: self.input.to_string(),
+                                message: format!("{}: {f}", "invalid instruction".bold()),
+                                start_pos: span.start,
+                                last_pos: span.end,
+                            });
+                        }
                         new_tokens.push((
                             Ok(TokenKind::Instruction(InstructionData {
                                 expanded: false,
@@ -280,7 +298,10 @@ impl<'a> Parser<'a> {
                 }
             }
         }
-        new_tokens
+        if !errors.is_empty() {
+            return Err(errors);
+        }
+        Ok(new_tokens)
     }
 }
 

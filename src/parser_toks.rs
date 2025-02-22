@@ -57,26 +57,32 @@ impl ArgumentType {
 
 impl TokenKind {
     pub fn is_imm(&self) -> bool {
-        matches!(self, TokenKind::IntLit(_))
+        matches!(self, TokenKind::IntLit(_) | TokenKind::MacroIdent(_))
     }
+
     pub fn is_mem(&self) -> bool {
-        matches!(self, TokenKind::Mem(mem_addr) if !mem_addr.indirect)
+        matches!(self, TokenKind::Mem(mem_addr) if !mem_addr.indirect | matches!(self, TokenKind::MacroIdent(_)))
     }
+
     pub fn is_imem(&self) -> bool {
-        matches!(self, TokenKind::Mem(mem_addr) if mem_addr.indirect)
+        matches!(self, TokenKind::Mem(mem_addr) if mem_addr.indirect | matches!(self, TokenKind::MacroIdent(_)))
     }
 
     pub fn is_reg(&self) -> bool {
-        matches!(self, TokenKind::Register(_))
+        matches!(self, TokenKind::Register(_) | TokenKind::MacroIdent(_))
     }
+
     pub fn is_ireg(&self) -> bool {
-        matches!(self, TokenKind::IReg(_))
+        matches!(self, TokenKind::IReg(_) | TokenKind::MacroIdent(_))
     }
+
     pub fn is_ident(&self) -> bool {
-        matches!(self, TokenKind::Ident(_))
+        matches!(
+            self,
+            TokenKind::Ident(_) | TokenKind::MacroIdent(_) | TokenKind::MacroLabel(_)
+        )
     }
 }
-
 #[derive(Debug, PartialEq, Serialize, Clone)]
 pub enum InstructionArgument {
     Mem(MemAddr),
@@ -112,20 +118,29 @@ impl InstructionArgument {
         }
     }
     pub fn is_imm(&self) -> bool {
-        matches!(self, InstructionArgument::Imm(_))
+        matches!(
+            self,
+            InstructionArgument::Imm(_) | InstructionArgument::MacroIdent(_)
+        )
     }
     pub fn is_mem(&self) -> bool {
-        matches!(self, InstructionArgument::Mem(mem_addr) if !mem_addr.indirect)
+        matches!(self, InstructionArgument::Mem(mem_addr) if !mem_addr.indirect | matches!(self, InstructionArgument::MacroIdent(_)))
     }
     pub fn is_imem(&self) -> bool {
-        matches!(self, InstructionArgument::Mem(mem_addr) if mem_addr.indirect)
+        matches!(self, InstructionArgument::Mem(mem_addr) if mem_addr.indirect | matches!(self, InstructionArgument::MacroIdent(_)))
     }
 
     pub fn is_reg(&self) -> bool {
-        matches!(self, InstructionArgument::Reg(_))
+        matches!(
+            self,
+            InstructionArgument::Reg(_) | InstructionArgument::MacroIdent(_)
+        )
     }
     pub fn is_ireg(&self) -> bool {
-        matches!(self, InstructionArgument::IReg(_))
+        matches!(
+            self,
+            InstructionArgument::IReg(_) | InstructionArgument::MacroIdent(_)
+        )
     }
     pub fn is_ident(&self) -> bool {
         matches!(

@@ -32,9 +32,13 @@ impl<'a> Parser<'a> {
             },
             first_pass_tokens?,
         );
+        let toks = match second_pass_tokens {
+            Err(e) => return Err(e),
+            Ok(ref v) => v,
+        };
         Ok(Parser {
             file,
-            lexer: second_pass_tokens.into_iter().peekable(),
+            lexer: toks.clone().into_iter().peekable(),
             input,
             errors,
         })

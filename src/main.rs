@@ -14,12 +14,13 @@ label: macro_rules! silly ( arg1: reg, arg2: imm, arg3: reg, arg4: mem) {
     const memloc = 0xff
     lea r0, [(memloc + 3)]
 add r0, (((( ( 6 * 3 ) + (3 + 3) * 5) & ( 6 * 3 ) + (3 + 3) * 5) * 2 + (3 * 4 + 2) & 33) + (( ( 6 * 3 ) + (3 + 3) * 5) & ( 6 * 3 ) + (3 + 3) * 5) * 2 + (3 * 4 + 2) & 33))
+    const c = 23
 "#;
     println!("{input_string}");
     let file = "input.asm";
 
     let mut error_count = 0;
-
+    // I need a parser function to find all constants and store them
     let mut parser = match Parser::new(String::from(file), input_string) {
         Ok(v) => v,
         Err(e) => {
@@ -71,7 +72,7 @@ add r0, (((( ( 6 * 3 ) + (3 + 3) * 5) & ( 6 * 3 ) + (3 + 3) * 5) * 2 + (3 * 4 + 
                         file: fname.to_string(),
                         help: None,
                         input: f_string.to_string(),
-                        message: "cannot include macro file itself".to_string(),
+                        message: format!("cannot include file {} in itself", fname.magenta()),
                         start_pos: loc.start,
                         last_pos: loc.end,
                     };
@@ -128,7 +129,7 @@ add r0, (((( ( 6 * 3 ) + (3 + 3) * 5) & ( 6 * 3 ) + (3 + 3) * 5) * 2 + (3 * 4 + 
                             input: f_string.to_string(),
                             message: format!(
                                 "{}: with name `{}`: {}",
-                                "cannot open file".bold(),
+                                "cannot read file".bold(),
                                 new_file.bold(),
                                 e.to_string().bold()
                             ),
