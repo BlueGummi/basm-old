@@ -33,24 +33,6 @@ const v = (4 * 3)
     [( 2 * (c + 3))]
 "#;
     println!("{input_string}");
-    let my_macaroni = MacroContent {
-        full_data: String::from("macro_rules! ka ( frank: reg ) {"),
-        file: String::from("aw"),
-        name: String::from("ka"),
-        args: vec![(
-            FullArgument {
-                name: String::from("frank"),
-                arg_type: ArgumentType::Reg,
-            },
-            18..23,
-        )],
-        tokens: Vec::new(),
-    };
-    if let Err(e) = my_macaroni.is_valid(String::from("ka!(2)"), vec![(TokenKind::IntLit(2), 4..5)])
-    {
-        // this is working
-        println!("{e}");
-    }
     let mut parser = match Parser::new(String::from("input.asm"), input_string) {
         Ok(v) => v,
         Err(e) => {
@@ -87,14 +69,33 @@ const v = (4 * 3)
     for element in mac_locs {
         toks.remove(element);
     }
+    let mut mac_call_data = Vec::new();
+    let mut in_call = false;
+    let mut curr_mac = None;
+    let mac_map = MACRO_MAP.lock().unwrap();
     for (index, (element, span)) in toks.iter().enumerate() {
         if let MacroCall(call) = element {
-            let mut mac_map = MACRO_MAP.lock().unwrap();
+            in_call = true;
+            mac_call_data = Vec::new();
             if let Some(v) = mac_map.get(call) {
-                println!("Called macro {call} at {span:?}");
+                curr_mac = Some(v);
             } else {
-                println!("couldn't find macro with name {call}");
+                curr_mac = None;
             }
+            continue;
+        }
+        if let RightParen = element {
+            in_call = false;
+            if let Some((v, m)) = curr_mac {
+                match m.is_valid(input_string.to_string(), mac_call_data.clone()) {
+                    Ok(()) => (),
+                    Err(e) => println!("{e}"),
+                }
+            }
+            continue;
+        }
+        if in_call {
+            mac_call_data.push((element.clone(), span.clone()));
         }
     }
 }
