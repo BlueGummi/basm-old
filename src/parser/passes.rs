@@ -277,7 +277,7 @@ impl<'a> Parser<'a> {
                                 file: self.file.to_string(),
                                 help: None,
                                 input: self.input.to_string(),
-                                message: f.to_string(), 
+                                message: f.to_string(),
                                 start_pos: span.start,
                                 last_pos: span.end,
                             });

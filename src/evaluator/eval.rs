@@ -97,7 +97,12 @@ pub fn evaluate_expression(
     token_iter: &mut Evalex,
 ) -> Result<i64, ParserError> {
     let expr = parse_expression(file.to_string(), input, token_iter)?;
-    println!("{}", expr.evaluate());
-    println!("{expr}");
+    if CONFIG.verbose {
+        print_msg!("BEGINNING AST EXPRESSION EVALUATION\n\nRAW EXPR:\n{expr:?}");
+        println!();
+        print_msg!("CONSTRUCTED AST");
+        println!("{}", expr.evaluate());
+        println!("{expr}");
+    }
     Ok(expr.evaluate())
 }

@@ -5,23 +5,27 @@ use std::fs::File;
 use std::io::Read;
 fn main() {
     let input_string = r#"
-    @include "my.asm"
 label: macro_rules! silly ( arg1: reg, arg2: imm, arg3: reg, arg4: mem) { 
     mov %arg1, %arg2
     lea %arg2, %arg4
     .asciiz "Yap!"
 }
-    mov r0, [0xff]
     const memloc = 0xff
     lea r0, [(memloc + 3)]
 add r0, (((( ( 6 * 3 ) + (3 + 3) * 5) & ( 6 * 3 ) + (3 + 3) * 5) * 2 + (3 * 4 + 2) & 33) + (( ( 6 * 3 ) + (3 + 3) * 5) & ( 6 * 3 ) + (3 + 3) * 5) * 2 + (3 * 4 + 2) & 33))
     const c = 23
 "#;
-    println!("{input_string}");
+    if CONFIG.verbose {
+        print_msg!("RAW INPUT");
+        println!("{input_string}");
+    }
     let file = "input.asm";
 
     let mut error_count = 0;
     // I need a parser function to find all constants and store them
+    if CONFIG.verbose {
+        print_msg!("PARSER CREATION");
+    }
     let mut parser = match Parser::new(String::from(file), input_string) {
         Ok(v) => v,
         Err(e) => {
@@ -36,9 +40,12 @@ add r0, (((( ( 6 * 3 ) + (3 + 3) * 5) & ( 6 * 3 ) + (3 + 3) * 5) * 2 + (3 * 4 + 
     let mut toks = match parser.parse() {
         Ok(tokens) => {
             //println!("{#:?}", serde_json::to_string_pretty(&tokens).unwrap());
-            /*for (element, _) in &tokens {
-                println!("{}", element);
-            }*/
+            if CONFIG.verbose {
+                print_msg!("INITIAL TOKENS (UNEXPANDED MACROS AND DIRECTIVES)");
+                for (_, element, _) in &tokens {
+                    println!("{}", element);
+                }
+            }
             tokens
         }
         Err(e) => {
@@ -317,7 +324,10 @@ add r0, (((( ( 6 * 3 ) + (3 + 3) * 5) & ( 6 * 3 ) + (3 + 3) * 5) * 2 + (3 * 4 + 
         );
         std::process::exit(1);
     }
-    for (_, f, _) in &toks {
-        println!("{f}");
+    if CONFIG.verbose {
+        print_msg!("COMPLETE TOKENS");
+        for (_, f, _) in &toks {
+            println!("{f}");
+        }
     }
 }
