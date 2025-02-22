@@ -3,11 +3,12 @@ use basm2::*;
 fn main() {
     let input_string = r#"
 
-label: macro_rules! fnaf_is_real ( arg1: reg ) { 
-    mov %arg1, 0 ; comment
+label: macro_rules! silly ( arg1: reg, arg2: imm, arg3: reg, arg4: mem) { 
+    mov %arg2, %arg2
+    lea %arg3, %arg4
 }
 
-    fnaf_is_real!(r6)
+    silly!(r6, 3, r2, [0xff])
 
 "#;
     let input_string_2 = r#"

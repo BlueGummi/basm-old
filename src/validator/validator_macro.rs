@@ -47,7 +47,7 @@ impl MacroContent {
                 if *d == arg.arg_type {
                     continue;
                 } else {
-                    panic!(); /*
+                    panic!("found wrong thing"); /*
                               return Err(MacroValidatorError {
                                   err_input: self.full_data.to_string(),
                                   err_message: format!("expected {}, found {d}", arg.arg_type),
@@ -58,7 +58,7 @@ impl MacroContent {
                               }); */
                 }
             } else {
-                panic!();
+                panic!("not enough args");
                 /*return Err(MacroValidatorError {
                     err_input: self.full_data.to_string(),
                     err_message: String::from("an incorrect number of arguments were supplied"),
