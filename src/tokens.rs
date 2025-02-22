@@ -166,8 +166,13 @@ fn parse_content(content: &str) -> i64 {
 }
 
 impl TokenKind {
-    pub fn is_empty(&self) -> bool {
-        matches!(self, TokenKind::Tab | TokenKind::Whitespace)
+    // (M)acro (I)dentifier
+    pub fn get_mi_raw(&self) -> Option<String> {
+        if let TokenKind::MacroIdent(d) = self {
+            Some(d.to_string())
+        } else {
+            None
+        }
     }
 }
 fn parse_char(s: &str) -> char {

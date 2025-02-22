@@ -59,8 +59,12 @@ impl TokenKind {
         matches!(self, TokenKind::IntLit(_))
     }
     pub fn is_mem(&self) -> bool {
-        matches!(self, TokenKind::Mem(_))
+        matches!(self, TokenKind::Mem(mem_addr) if !mem_addr.indirect)
     }
+    pub fn is_imem(&self) -> bool {
+        matches!(self, TokenKind::Mem(mem_addr) if mem_addr.indirect)
+    }
+
     pub fn is_reg(&self) -> bool {
         matches!(self, TokenKind::Register(_))
     }
@@ -80,6 +84,35 @@ pub enum InstructionArgument {
     Imm(i64),
     Ident(String),
     MacroIdent(String),
+}
+
+impl TokenKind {
+    pub fn to_tok_kind(&self) -> InstructionArgument {
+        use crate::TokenKind::*;
+        match self {
+            Mem(v) => InstructionArgument::Mem(v.clone()),
+            Register(v) => InstructionArgument::Reg(*v),
+            IReg(v) => InstructionArgument::IReg(*v),
+            IntLit(v) => InstructionArgument::Imm(*v),
+            Ident(v) => InstructionArgument::Ident(v.clone()),
+            MacroIdent(v) => InstructionArgument::MacroIdent(v.clone()),
+            _ => panic!(":3"),
+        }
+    }
+}
+
+impl InstructionArgument {
+    pub fn to_tok_kind(&self) -> TokenKind {
+        use crate::InstructionArgument::*;
+        match self {
+            Mem(v) => TokenKind::Mem(v.clone()),
+            Reg(v) => TokenKind::Register(*v),
+            IReg(v) => TokenKind::IReg(*v),
+            Imm(v) => TokenKind::IntLit(*v),
+            Ident(v) => TokenKind::Ident(v.clone()),
+            MacroIdent(v) => TokenKind::MacroIdent(v.clone()),
+        }
+    }
 }
 
 #[derive(Debug, PartialEq, Serialize, Clone)]

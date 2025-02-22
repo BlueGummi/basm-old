@@ -9,7 +9,7 @@ pub struct MacroValidatorError<'a> {
     pub err_message: String,
     pub help: Option<String>,
     pub orig_input: String,
-    pub orig_pos: std::ops::Range<usize>, // macro call
+    pub orig_pos: &'a std::ops::Range<usize>, // macro call
     pub mac: &'a MacroContent,
 }
 

@@ -3,20 +3,11 @@ use basm2::*;
 fn main() {
     let input_string = r#"
 
-label: macro_rules! fanf ( arg1 : reg, arg2 : imm, arg3 : mem, arg4 : ireg, arg5 : label ) { 
-const     v = (4 * 3)
-    mov %arg1, %arg2 ; comment
-    mov r0, &[0x0]
-    label_again: .asciiz "My text"
+label: macro_rules! fnaf_is_real ( arg1: reg ) { 
+    mov %arg1, 0 ; comment
 }
-    mov r0, (v + 3)
-    [( 2 * (v + 3))]
 
-    push (3 << 1)
-    fanf!( ( 3 + 3 ))
-    fnaf!(f)
-    add r0, (3 & 4)
-    hlt
+    fnaf_is_real!(r6)
 
 "#;
     let input_string_2 = r#"
@@ -80,6 +71,7 @@ const v = (4 * 3)
             if let Some(v) = mac_map.get(call) {
                 curr_mac = Some(v);
             } else {
+                println!("uwu :3 i cannot find this macro with name {call}");
                 curr_mac = None;
             }
             continue;
@@ -88,7 +80,7 @@ const v = (4 * 3)
             in_call = false;
             if let Some((v, m)) = curr_mac {
                 match m.is_valid(input_string.to_string(), mac_call_data.clone()) {
-                    Ok(()) => (),
+                    Ok(v) => println!("expanded toks: {v:?}"),
                     Err(e) => println!("{e}"),
                 }
             }
