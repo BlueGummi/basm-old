@@ -50,18 +50,26 @@ add r0, (((( ( 6 * 3 ) + (3 + 3) * 5) & ( 6 * 3 ) + (3 + 3) * 5) * 2 + (3 * 4 + 
     };
 
     use crate::TokenKind::*;
-    let mut included_toks = Vec::new();
-    let mut current_file = String::from(file);
-    let mut index = 0;
+
     'inc_check: loop {
+        let mut included_toks = Vec::new();
+        let mut index = 0;
+        #[allow(clippy::explicit_counter_loop)]
         for (fname, element, loc) in &toks {
             if let IncludeFile(new_file) = element {
                 if *new_file == *fname {
-                    println!("{included_toks:#?}");
-                    panic!("don't include the same file {new_file} in yourself");
+                    let problem = ParserError {
+                        file: file.to_string(),
+                        help: None,
+                        input: input_string.to_string(),
+                        message: "cannot include macro file itself".to_string(),
+                        start_pos: loc.start,
+                        last_pos: loc.end,
+                    };
+                    error_count += 1;
+                    println!("{problem}\n");
                     break 'inc_check;
                 }
-                current_file = fname.to_string();
                 let mut file_data = match File::open(new_file) {
                     Ok(v) => v,
                     Err(e) => {
@@ -85,7 +93,7 @@ add r0, (((( ( 6 * 3 ) + (3 + 3) * 5) & ( 6 * 3 ) + (3 + 3) * 5) * 2 + (3 * 4 + 
                 };
                 let mut contents = String::new();
                 match file_data.read_to_string(&mut contents) {
-                    Ok(v) => (),
+                    Ok(_) => (),
                     Err(e) => {
                         let problem = ParserError {
                             file: file.to_string(),
@@ -135,12 +143,12 @@ add r0, (((( ( 6 * 3 ) + (3 + 3) * 5) & ( 6 * 3 ) + (3 + 3) * 5) * 2 + (3 * 4 + 
                     }
                 };
             } else {
-                included_toks.push((current_file.to_string(), element.clone(), loc.clone()));
+                included_toks.push((fname.to_string(), element.clone(), loc.clone()));
             }
+            index += 1;
         }
-        index += 1;
-
-        let toks_has_include = included_toks
+        toks = included_toks.clone();
+        let toks_has_include = toks
             .iter()
             .any(|(_, kind, _)| matches!(kind, basm2::TokenKind::IncludeFile(_)));
         if !toks_has_include {
@@ -148,13 +156,9 @@ add r0, (((( ( 6 * 3 ) + (3 + 3) * 5) & ( 6 * 3 ) + (3 + 3) * 5) * 2 + (3 * 4 + 
         }
     }
 
-    toks = included_toks;
-    for (_, f, _) in &toks {
-        println!("{f}");
-    }
     let mut mac_locs = Vec::new();
 
-    for (index, (fname, element, _)) in toks.iter().enumerate() {
+    for (index, (_fname, element, _)) in toks.iter().enumerate() {
         if let Macro(data) = element {
             let mut mac_map = MACRO_MAP.lock().unwrap();
             mac_map.insert(
@@ -282,5 +286,8 @@ add r0, (((( ( 6 * 3 ) + (3 + 3) * 5) & ( 6 * 3 ) + (3 + 3) * 5) * 2 + (3 * 4 + 
             msg.bold()
         );
         std::process::exit(1);
+    }
+    for (_, f, _) in &toks {
+        println!("{f}");
     }
 }
