@@ -75,3 +75,47 @@ impl<'a> Parser<'a> {
         Ok(tokens)
     }
 }
+pub fn create_parser<'a>(
+    file: &'a str,
+    input_string: &'a str,
+    error_count: &mut i32,
+) -> Option<Parser<'a>> {
+    if CONFIG.verbose {
+        print_msg!("PARSER CREATION");
+    }
+    match Parser::new(String::from(file), input_string) {
+        Ok(parser) => Some(parser),
+        Err(errors) => {
+            for error in errors {
+                *error_count += 1;
+                println!("{error}\n");
+            }
+            None
+        }
+    }
+}
+
+pub fn parse_tokens(
+    parser: &mut Parser,
+    _input_string: &str,
+    error_count: &mut i32,
+) -> Option<Vec<(String, TokenKind, std::ops::Range<usize>)>> {
+    match parser.parse() {
+        Ok(tokens) => {
+            if CONFIG.verbose {
+                print_msg!("INITIAL TOKENS (UNEXPANDED MACROS AND DIRECTIVES)");
+                for (_, element, _) in &tokens {
+                    println!("{}", element);
+                }
+            }
+            Some(tokens)
+        }
+        Err(errors) => {
+            for error in errors {
+                *error_count += 1;
+                println!("{error}\n");
+            }
+            None
+        }
+    }
+}
