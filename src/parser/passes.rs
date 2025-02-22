@@ -74,7 +74,7 @@ impl<'a> Parser<'a> {
                     saw_amp = false;
                     if prev_was_const {
                         if let Some(n) = const_names.pop() {
-                            let mut vmap = VARIABLE_MAP.lock().unwrap();
+                            let mut vmap = V_MAP.lock().unwrap();
                             vmap.insert(n, (file.to_string(), span, v));
                             std::mem::drop(vmap);
                         } else {
@@ -148,7 +148,7 @@ impl<'a> Parser<'a> {
                         Ok(Some((value, new_span))) => {
                             if prev_was_const {
                                 if let Some(n) = const_names.pop() {
-                                    let mut vmap = VARIABLE_MAP.lock().unwrap();
+                                    let mut vmap = V_MAP.lock().unwrap();
                                     vmap.insert(n, (file.to_string(), new_span, value));
                                     std::mem::drop(vmap);
                                 } else {
