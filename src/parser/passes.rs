@@ -1,6 +1,5 @@
 use crate::eval::evaluate_expression;
 use crate::*;
-use colored::*;
 
 type PassResult = Result<Vec<(Result<TokenKind, ()>, std::ops::Range<usize>)>, Vec<ParserError>>;
 impl<'a> Parser<'a> {
@@ -278,7 +277,7 @@ impl<'a> Parser<'a> {
                                 file: self.file.to_string(),
                                 help: None,
                                 input: self.input.to_string(),
-                                message: format!("{}: {f}", "invalid instruction".bold()),
+                                message: f.to_string(), 
                                 start_pos: span.start,
                                 last_pos: span.end,
                             });
