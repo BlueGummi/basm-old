@@ -56,10 +56,15 @@ add r0, (((( ( 6 * 3 ) + (3 + 3) * 5) & ( 6 * 3 ) + (3 + 3) * 5) * 2 + (3 * 4 + 
         let mut index = 0;
         #[allow(clippy::explicit_counter_loop)]
         for (fname, element, loc) in &toks {
+            let mut input_string = String::new();
+            File::open(fname)
+                .unwrap()
+                .read_to_string(&mut input_string)
+                .unwrap();
             if let IncludeFile(new_file) = element {
                 if *new_file == *fname {
                     let problem = ParserError {
-                        file: file.to_string(),
+                        file: fname.to_string(),
                         help: None,
                         input: input_string.to_string(),
                         message: "cannot include macro file itself".to_string(),
@@ -74,7 +79,7 @@ add r0, (((( ( 6 * 3 ) + (3 + 3) * 5) & ( 6 * 3 ) + (3 + 3) * 5) * 2 + (3 * 4 + 
                     Ok(v) => v,
                     Err(e) => {
                         let problem = ParserError {
-                            file: file.to_string(),
+                            file: fname.to_string(),
                             help: None,
                             input: input_string.to_string(),
                             message: format!(
@@ -96,7 +101,7 @@ add r0, (((( ( 6 * 3 ) + (3 + 3) * 5) & ( 6 * 3 ) + (3 + 3) * 5) * 2 + (3 * 4 + 
                     Ok(_) => (),
                     Err(e) => {
                         let problem = ParserError {
-                            file: file.to_string(),
+                            file: fname.to_string(),
                             help: None,
                             input: input_string.to_string(),
                             message: format!(
