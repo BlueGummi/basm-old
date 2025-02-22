@@ -93,9 +93,9 @@ impl fmt::Display for MemAddr {
         writeln!(f, "├── Indirect: {}", self.indirect)?;
         for (i, (arg, _)) in self.content.iter().enumerate() {
             if i != self.content.len() - 1 {
-                writeln!(f, "│   ├── {}", arg)?;
+                writeln!(f, "    │   ├── {}", arg)?;
             } else {
-                writeln!(f, "│   └── {}", arg)?;
+                write!(f, "    │   └── {}", arg)?;
             }
         }
         Ok(())
@@ -147,7 +147,7 @@ impl fmt::Display for ArgumentType {
 impl fmt::Display for InstructionArgument {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            InstructionArgument::Mem(token) => write!(f, "Mem({:#?})", token),
+            InstructionArgument::Mem(token) => write!(f, "Mem\n    {}", token),
             InstructionArgument::Reg(reg) => write!(f, "Reg({})", reg),
             InstructionArgument::IReg(reg) => write!(f, "IReg({})", reg),
             InstructionArgument::Imm(imm) => write!(f, "Imm({})", imm),

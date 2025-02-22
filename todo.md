@@ -1,8 +1,8 @@
 - [x] Implement constant expression evaluation w/hashmap
 - [ ] Implement .include directives
 - [ ] Create instruction validator for instruction struct
-- [ ] Implement macro verification for macro struct 
+- [x] Implement macro verification for macro struct 
 - [ ] Implement expand function for macro when arguments are passed
-- [ ] Create macro TokenKind
+- [x] Create macro TokenKind
 - [ ] Implement codegeneration
 - [ ] Create warning type
