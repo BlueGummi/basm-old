@@ -92,9 +92,11 @@ impl<'a> Parser<'a> {
                     } else {
                         tokens.push((Ok(TokenKind::IntLit(v)), span));
                     }
+                    prev_was_const = false;
                 }
                 Ok(TokenKind::LeftBracket) => {
                     // memory addresses are also not instructions
+                    prev_was_const = false;
                     let mut addr_toks = Vec::new();
                     'mdl: loop {
                         match lexer.next() {
@@ -178,6 +180,7 @@ impl<'a> Parser<'a> {
                     if let Some((Ok(TokenKind::RightParen), _)) = lexer.peek() {
                         lexer.next();
                     }
+                    prev_was_const = false;
                 }
                 _ => {
                     saw_amp = false;
