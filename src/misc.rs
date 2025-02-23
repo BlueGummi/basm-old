@@ -1,4 +1,13 @@
 #[macro_export]
+macro_rules! print_errc {
+    ( $error_count:expr ) => {
+        if $error_count > 0 {
+            print_errors($error_count);
+            std::process::exit(1);
+        }
+    };
+}
+#[macro_export]
 macro_rules! print_msg {
     ($($arg:tt)*) => {
         #[allow(unused_imports)]
@@ -77,4 +86,18 @@ pub fn levenshtein(a: &str, b: &str) -> usize {
         }
     }
     dp[a_len][b_len]
+}
+
+use colored::*;
+pub fn print_errors(error_count: i32) {
+    let msg = if error_count == 1 {
+        "error generated"
+    } else {
+        "errors generated"
+    };
+    println!(
+        "compilation unsuccessful\n{} {}.",
+        error_count.to_string().bright_red(),
+        msg,
+    );
 }

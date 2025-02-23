@@ -1,9 +1,10 @@
 use crate::*;
+use colored::*;
 use std::fs::File;
 use std::io::Read;
+
 pub fn process_includes(
     toks: &mut Vec<(String, TokenKind, std::ops::Range<usize>)>,
-    input_string: &str,
     error_count: &mut i32,
 ) {
     loop {
@@ -20,19 +21,18 @@ pub fn process_includes(
                     handle_include_error(
                         fname,
                         loc,
-                        input_string,
                         error_count,
-                        "cannot include file in itself",
+                        &format!("cannot include {fname} in itself"),
                         None,
                     );
+                    println!("{toks:#?}");
                     break;
                 }
-                if let Some(contents) = read_file(new_file, fname, loc, input_string, error_count) {
-                    if let Some(mut parser) = create_parser(new_file, &contents, error_count) {
-                        if let Some(tokens) = parse_tokens(&mut parser, &contents, error_count) {
-                            for token in tokens.into_iter().rev() {
-                                included_toks.insert(index, token);
-                            }
+                let contents = read_file(new_file);
+                if let Some(mut parser) = create_parser(new_file, &contents, error_count) {
+                    if let Some(tokens) = parse_tokens(&mut parser, &contents, error_count) {
+                        for token in tokens.into_iter().rev() {
+                            included_toks.insert(index, token);
                         }
                     }
                 }
@@ -47,43 +47,32 @@ pub fn process_includes(
             break;
         }
     }
+    print_errc!(*error_count);
 }
 
-pub fn read_file(
-    file_path: &str,
-    fname: &str,
-    loc: &std::ops::Range<usize>,
-    input_string: &str,
-    error_count: &mut i32,
-) -> Option<String> {
+pub fn read_file(file_path: &str) -> String {
     let mut file_data = match File::open(file_path) {
         Ok(file) => file,
         Err(e) => {
-            handle_include_error(
-                fname,
-                loc,
-                input_string,
-                error_count,
-                &format!("cannot open file: {}", e),
-                None,
+            println!(
+                "{}: cannot open file \"{}\": {e}",
+                "error".bright_red(),
+                file_path.bold().magenta()
             );
-            return None;
+            std::process::exit(1)
         }
     };
 
     let mut contents = String::new();
     match file_data.read_to_string(&mut contents) {
-        Ok(_) => Some(contents),
+        Ok(_) => contents,
         Err(e) => {
-            handle_include_error(
-                fname,
-                loc,
-                input_string,
-                error_count,
-                &format!("cannot read file: {}", e),
-                None,
+            println!(
+                "{}: cannot read file \"{}\": {e}",
+                "error".bright_red(),
+                file_path.bold().magenta()
             );
-            None
+            std::process::exit(1);
         }
     }
 }
@@ -91,7 +80,6 @@ pub fn read_file(
 pub fn handle_include_error(
     fname: &str,
     loc: &std::ops::Range<usize>,
-    input_string: &str,
     error_count: &mut i32,
     message: &str,
     help: Option<String>,
@@ -99,7 +87,7 @@ pub fn handle_include_error(
     let problem = ParserError {
         file: fname.to_string(),
         help,
-        input: input_string.to_string(),
+        input: read_file(fname),
         message: message.to_string(),
         start_pos: loc.start,
         last_pos: loc.end,
