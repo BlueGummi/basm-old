@@ -41,6 +41,7 @@ pub enum InstructionArgument {
     Imm(i64),
     Ident(String),
     MacroIdent(String),
+    CharLit(char),
 }
 
 #[derive(Debug, PartialEq, Serialize, Clone)]

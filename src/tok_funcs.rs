@@ -135,6 +135,7 @@ impl InstructionArgument {
             Reg(v) => TokenKind::Register(*v),
             IReg(v) => TokenKind::IReg(*v),
             Imm(v) => TokenKind::IntLit(*v),
+            CharLit(v) => TokenKind::IntLit(*v as i64),
             Ident(v) => TokenKind::Ident(v.clone()),
             MacroIdent(v) => TokenKind::MacroIdent(v.clone()),
         }

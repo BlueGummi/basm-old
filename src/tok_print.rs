@@ -38,7 +38,6 @@ impl fmt::Display for TokenKind {
             TokenKind::Xor => write!(f, "caret"),
             TokenKind::Colon => write!(f, "colon"),
             TokenKind::Register(value) => write!(f, "register {} ", value),
-            TokenKind::CharLit(value) => write!(f, "character literal('{}')", value),
             TokenKind::StringLit(value) => write!(f, "string literal(\"{}\")", value),
             TokenKind::IntLit(value) => write!(f, "integer literal({})", value),
             TokenKind::MacroDef(value) => write!(f, "macro definition({})", value),
@@ -125,6 +124,7 @@ impl InstructionArgument {
             InstructionArgument::Imm(_) => String::from("immediate"),
             InstructionArgument::Ident(_) => String::from("identifier"),
             InstructionArgument::MacroIdent(_) => String::from("macro identifier"),
+            InstructionArgument::CharLit(_) => String::from("character literal"),
         }
     }
 }
@@ -137,6 +137,7 @@ impl fmt::Display for InstructionArgument {
             InstructionArgument::Imm(imm) => write!(f, "Imm({})", imm),
             InstructionArgument::Ident(ident) => write!(f, "Ident({})", ident),
             InstructionArgument::MacroIdent(ident) => write!(f, "MacroIdent({})", ident),
+            InstructionArgument::CharLit(c) => write!(f, "Char({})", c),
         }
     }
 }
