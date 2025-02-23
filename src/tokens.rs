@@ -164,7 +164,7 @@ fn parse_content(content: &str) -> i64 {
     } else if content.chars().all(|c| c.is_ascii_digit()) {
         content.parse::<i64>().unwrap()
     } else {
-        panic!("lexer failed to parse Integer Literal");
+        panic!("lexer failed to parse Integer Literal"); // idk
     }
 }
 
@@ -189,7 +189,7 @@ fn parse_char(s: &str) -> char {
         "\\\"" => '\"',
         "\\\\" => '\\',
         _ if inner.len() == 1 => inner.chars().next().unwrap(),
-        _ => panic!("Invalid character escape sequence: {}", s),
+        _ => inner.chars().nth(1).unwrap(),
     }
 }
 fn parse_string(s: &str) -> String {
@@ -207,7 +207,8 @@ fn parse_string(s: &str) -> String {
                 Some('\'') => result.push('\''),
                 Some('"') => result.push('\"'),
                 Some('\\') => result.push('\\'),
-                _ => panic!("Invalid string escape sequence"),
+                Some(v) => result.push(v),
+                None => break,
             }
         } else {
             result.push(c);
