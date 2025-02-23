@@ -1,8 +1,6 @@
 pub mod ast_toks;
 pub mod config;
-pub mod directive_proc;
 pub mod evaluator;
-pub mod macro_proc;
 pub mod misc;
 pub mod parser;
 pub mod preproc;
@@ -13,9 +11,7 @@ pub mod tokens;
 pub mod validator;
 pub use ast_toks::*;
 pub use config::*;
-pub use directive_proc::*;
 pub use evaluator::*;
-pub use macro_proc::*;
 pub use misc::*;
 pub use parser::*;
 pub use preproc::*;
