@@ -1,4 +1,5 @@
 use crate::*;
+use colored::*;
 use std::collections::HashMap;
 
 #[allow(suspicious_double_ref_op)]
@@ -68,7 +69,7 @@ impl MacroContent {
             });
         }
         for (index, (_, arg, span)) in self.args.iter().enumerate() {
-            if let Some((d, span)) = parsed_toks.get(index) {
+            if let Some((d, _)) = parsed_toks.get(index) {
                 if *d == arg.arg_type {
                     continue;
                 } else {
@@ -77,8 +78,8 @@ impl MacroContent {
                         err_input: self.full_data.to_string(),
                         err_message: format!("expected {}, found {d}", arg.arg_type),
                         help: None,
-                        orig_input: orig_data.to_string(),
-                        orig_pos: span.clone().clone(),
+                        orig_input: orig_data.to_string(), // this shouldn't panic
+                        orig_pos: parsed_toks.get(index - 1).unwrap().1.clone(),
                         mac: self.clone(),
                     });
                     break;
@@ -96,6 +97,12 @@ impl MacroContent {
                 break;
             }
         } // we need a hashmap of type ident names, TokenKind to record arguments
+        if !errs.is_empty() {
+            return Err(errs);
+        } // don't try to expand it if we have problems
+          //
+          //
+          // macro expandation
         let mut arg_map: HashMap<&String, &crate::TokenKind> = HashMap::new();
         let mut count = 0;
         for element in argument_indices {
@@ -114,7 +121,18 @@ impl MacroContent {
                     new_elems.push((v.clone().clone(), span.clone()));
                     continue;
                 } else {
-                    panic!("this is not a macro arg: {name}");
+                    errs.push(MacroValidatorError {
+                        err_file: err_file.to_string(),
+                        err_input: self.full_data.to_string(),
+                        err_message: format!(
+                            "{} was not an argument supplied in the macro",
+                            name.magenta()
+                        ),
+                        help: None, // borrow checker is yappin
+                        orig_input: orig_data.to_string(),
+                        orig_pos: span.clone(),
+                        mac: self.clone(),
+                    });
                 }
             } else if let TokenKind::Instruction(contents) = element {
                 let mut ins_args = Vec::new();
@@ -124,7 +142,18 @@ impl MacroContent {
                             ins_args.push((v.to_tok_kind(), span.clone()));
                             continue;
                         } else {
-                            panic!("this is not a macro arg: {name}");
+                            errs.push(MacroValidatorError {
+                                err_file: err_file.to_string(),
+                                err_input: self.full_data.to_string(),
+                                err_message: format!(
+                                    "{} was not an argument supplied in the macro",
+                                    name.magenta()
+                                ),
+                                help: None, // borrow checker is yappin
+                                orig_input: orig_data.to_string(),
+                                orig_pos: place.clone(),
+                                mac: self.clone(),
+                            });
                         }
                     }
                     ins_args.push((thing.clone(), place.clone()));

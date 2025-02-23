@@ -1,4 +1,5 @@
 use crate::*;
+use colored::*;
 use std::collections::HashMap;
 
 pub fn process_macros(
@@ -25,12 +26,12 @@ pub fn process_macros(
     let mut mac_call_data = Vec::new();
     let mut in_call = false;
     let mut curr_mac = None;
-    let mac_map = MACRO_MAP.lock().unwrap();
 
     let mut expanded_loc_map: HashMap<usize, Vec<(TokenKind, std::ops::Range<usize>)>> =
         HashMap::new();
     let mut expanded_indices = Vec::new();
 
+    let mac_map = MACRO_MAP.lock().unwrap();
     let mut counter = 0;
     for (fname, element, span) in toks.iter() {
         counter += 1;
@@ -40,8 +41,22 @@ pub fn process_macros(
             if let Some(v) = mac_map.get(call) {
                 curr_mac = Some(v);
             } else {
-                handle_include_error(fname, span, input_string, error_count, "cannot find macro");
-                curr_mac = None;
+                std::mem::drop(mac_map);
+                let info = find_similar_entries(call);
+                let info = if let (Some(s), _) = info {
+                    Some(format!("{} {s}", "╮".bright_red()))
+                } else {
+                    None
+                };
+                handle_include_error(
+                    fname,
+                    span,
+                    input_string,
+                    error_count,
+                    "cannot find macro",
+                    info,
+                );
+                break;
             }
             continue;
         }

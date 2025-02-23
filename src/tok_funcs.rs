@@ -116,7 +116,7 @@ impl TokenKind {
             IntLit(v) => InstructionArgument::Imm(*v),
             Ident(v) => InstructionArgument::Ident(v.clone()),
             MacroIdent(v) => InstructionArgument::MacroIdent(v.clone()),
-            _ => panic!(":3"),
+            _ => panic!(":3"), // we never call it like this so we good B)))
         }
     }
     pub fn get_value(&self) -> i64 {

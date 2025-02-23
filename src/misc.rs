@@ -50,3 +50,31 @@ macro_rules! print_msg {
         println!("{}", bottom_border);
     };
 }
+use std::cmp::min;
+#[allow(clippy::needless_range_loop)]
+pub fn levenshtein(a: &str, b: &str) -> usize {
+    let a_len = a.len();
+    let b_len = b.len();
+    let mut dp = vec![vec![0; b_len + 1]; a_len + 1];
+
+    for i in 0..=a_len {
+        for j in 0..=b_len {
+            if i == 0 {
+                dp[i][j] = j;
+            } else if j == 0 {
+                dp[i][j] = i;
+            } else {
+                let cost = if a.chars().nth(i - 1) == b.chars().nth(j - 1) {
+                    0
+                } else {
+                    1
+                };
+                dp[i][j] = min(
+                    min(dp[i - 1][j] + 1, dp[i][j - 1] + 1),
+                    dp[i - 1][j - 1] + cost,
+                );
+            }
+        }
+    }
+    dp[a_len][b_len]
+}

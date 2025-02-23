@@ -23,6 +23,7 @@ pub fn process_includes(
                         input_string,
                         error_count,
                         "cannot include file in itself",
+                        None,
                     );
                     break;
                 }
@@ -64,6 +65,7 @@ pub fn read_file(
                 input_string,
                 error_count,
                 &format!("cannot open file: {}", e),
+                None,
             );
             return None;
         }
@@ -79,6 +81,7 @@ pub fn read_file(
                 input_string,
                 error_count,
                 &format!("cannot read file: {}", e),
+                None,
             );
             None
         }
@@ -91,10 +94,11 @@ pub fn handle_include_error(
     input_string: &str,
     error_count: &mut i32,
     message: &str,
+    help: Option<String>,
 ) {
     let problem = ParserError {
         file: fname.to_string(),
-        help: None,
+        help,
         input: input_string.to_string(),
         message: message.to_string(),
         start_pos: loc.start,
