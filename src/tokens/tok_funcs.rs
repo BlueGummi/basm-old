@@ -22,6 +22,12 @@ impl ArgumentType {
 }
 
 impl TokenKind {
+    pub fn get_str(&self) -> String {
+        if let TokenKind::StringLit(s) = self {
+            return s.to_string();
+        }
+        panic!()
+    }
     pub fn is_imm(&self) -> bool {
         matches!(self, TokenKind::IntLit(_) | TokenKind::MacroIdent(_))
     }
@@ -50,6 +56,17 @@ impl TokenKind {
     }
 }
 impl InstructionArgument {
+    pub fn get_imm(&self) -> i16 {
+        if let InstructionArgument::Imm(v) = self {
+            if *v < 0 {
+                (1 << 7) | (*v as i16)
+            } else {
+                *v as i16
+            }
+        } else {
+            panic!("can't get here anyways :P");
+        }
+    }
     pub fn get_value(&self) -> i64 {
         use crate::InstructionArgument::*;
         match self {
@@ -135,7 +152,6 @@ impl InstructionArgument {
             Reg(v) => TokenKind::Register(*v),
             IReg(v) => TokenKind::IReg(*v),
             Imm(v) => TokenKind::IntLit(*v),
-            CharLit(v) => TokenKind::IntLit(*v as i64),
             Ident(v) => TokenKind::Ident(v.clone()),
             MacroIdent(v) => TokenKind::MacroIdent(v.clone()),
         }
